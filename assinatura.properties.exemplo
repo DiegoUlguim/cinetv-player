@@ -1,0 +1,16 @@
+# Copie este arquivo para assinatura.properties (que fica fora do Git) e preencha.
+#
+# Crie a chave uma vez, nesta pasta (app-iptv), com o keytool do JDK do Android Studio:
+#   keytool -genkeypair -keystore assinatura-iptv.jks -alias cinetv -keyalg RSA -keysize 2048 -validity 36500
+#
+# Guarde a chave e a senha. Uma atualizacao assinada com outra chave exige desinstalar o app,
+# e isso apaga login, progresso e favoritos.
+#
+# Sem este arquivo, o release sai assinado com a chave de debug como br.projetor.cinetv.dev.
+
+senha=troque-esta-senha
+
+# Opcionais, com os valores padrao:
+# arquivo=assinatura-iptv.jks
+# apelido=cinetv
+# senha_apelido=   (padrao: a mesma de senha)

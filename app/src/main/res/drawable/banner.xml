@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Banner 16:9 para a fileira de TV Apps do Projectivy -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp"
+    android:height="180dp"
+    android:viewportWidth="320"
+    android:viewportHeight="180">
+    <path android:fillColor="#FF14161A" android:pathData="M0,0h320v180h-320z" />
+    <path android:fillColor="#FFE8B04A" android:pathData="M138,62l48,28l-48,28z" />
+    <path android:fillColor="#33E8B04A" android:pathData="M0,170h320v10h-320z" />
+</vector>

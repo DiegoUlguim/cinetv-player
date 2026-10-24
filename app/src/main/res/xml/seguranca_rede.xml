@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  87% dos logos de canais do servidor estao em http:// sem TLS (24/10), em hosts variados.
+  A API e os fluxos de video sao https; as credenciais nao trafegam em claro.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

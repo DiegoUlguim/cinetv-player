@@ -1,0 +1,12 @@
+# Chave de release e senha: ficam fora do Git (modelo em assinatura.properties.exemplo)
+*.jks
+*.keystore
+assinatura.properties
+
+# Build e IDE
+.gradle/
+build/
+local.properties
+.idea/
+*.iml
+.kotlin/

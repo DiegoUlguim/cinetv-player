@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <uses-feature android:name="android.software.leanback" android:required="false" />
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+
+    <application
+        android:name=".AplicacaoCineTV"
+        android:allowBackup="false"
+        android:banner="@drawable/banner"
+        android:icon="@drawable/icone"
+        android:label="@string/nome_app"
+        android:networkSecurityConfig="@xml/seguranca_rede"
+        android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
+
+        <!-- Exportada por ser a tela de entrada -->
+        <activity
+            android:name=".AtividadePrincipal"
+            android:exported="true"
+            android:screenOrientation="landscape">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!--
+          Login por ADB (extras servidor, usuario e senha). WRITE_SECURE_SETTINGS: o shell do ADB
+          tem, um app comum nao consegue; assim outro app instalado nao troca o login do usuario.
+          Tarefa propria (taskAffinity vazio): como raiz da tarefa do app, um segundo login por ADB
+          so trazia a tarefa para a frente e nao gravava nada.
+        -->
+        <activity
+            android:name=".AtividadeLoginAdb"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:permission="android.permission.WRITE_SECURE_SETTINGS"
+            android:theme="@android:style/Theme.NoDisplay" />
+
+        <!-- Exportada so para o roteiro de medicao por ADB (extra formato = ts | m3u8); so o ADB abre -->
+        <activity
+            android:name=".player.AtividadePlayerAoVivo"
+            android:configChanges="keyboard|keyboardHidden|navigation|screenSize|smallestScreenSize|screenLayout"
+            android:exported="true"
+            android:permission="android.permission.WRITE_SECURE_SETTINGS"
+            android:screenOrientation="landscape" />
+
+        <activity
+            android:name=".ui.AtividadeDetalheSerie"
+            android:exported="false"
+            android:screenOrientation="landscape" />
+
+        <activity
+            android:name=".ui.AtividadeDetalheFilme"
+            android:exported="false"
+            android:screenOrientation="landscape" />
+
+        <!-- Exportada so para o roteiro de medicao por ADB; so o ADB abre -->
+        <activity
+            android:name=".player.AtividadePlayerSobDemanda"
+            android:configChanges="keyboard|keyboardHidden|navigation|screenSize|smallestScreenSize|screenLayout"
+            android:exported="true"
+            android:permission="android.permission.WRITE_SECURE_SETTINGS"
+            android:screenOrientation="landscape" />
+    </application>
+</manifest>

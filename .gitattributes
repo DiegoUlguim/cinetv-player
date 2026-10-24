@@ -1,0 +1,8 @@
+* text=auto
+# Scripts de shell e o gradlew quebram com CRLF no Git Bash
+*.sh text eol=lf
+gradlew text eol=lf
+# Scripts do Windows ficam em CRLF
+*.bat text eol=crlf
+*.jar binary
+*.png binary
