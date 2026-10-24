@@ -1,0 +1,11 @@
+{
+  "id": "br.projetor.cinetv.prova",
+  "version": "0.0.1",
+  "vendor": "CineTV",
+  "type": "web",
+  "main": "index.html",
+  "title": "CineTV prova",
+  "icon": "icone.png",
+  "resolution": "1920x1080",
+  "disableBackHistoryAPI": true
+}

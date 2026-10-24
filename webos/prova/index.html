@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>CineTV prova</title>
+<style>
+  html, body { margin: 0; background: #0e0f12; color: #e8eaed; font-family: sans-serif; }
+  body { padding: 40px 64px; font-size: 22px; }
+  h1 { font-size: 34px; margin: 0 0 8px; }
+  #estado { color: #9aa0a6; margin-bottom: 20px; }
+  table { border-collapse: collapse; width: 100%; }
+  td { padding: 6px 12px; border-bottom: 1px solid #2a2d33; vertical-align: top; }
+  td.ok { color: #6fcf9d; } td.falha { color: #ef8a7e; } td.aviso { color: #e6aa5c; }
+  video { position: fixed; right: 64px; bottom: 40px; width: 480px; height: 270px; background: #000; }
+</style>
+</head>
+<body>
+<h1>CineTV: prova do webOS (T0)</h1>
+<div id="estado">Preparando…</div>
+<table id="resultados"></table>
+<video id="video" muted></video>
+<script src="mpegts.js"></script>
+<script src="prova.js"></script>
+</body>
+</html>
