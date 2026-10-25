@@ -3,7 +3,7 @@
  * Cada teste vira uma linha na tela e no console, sem usuario nem senha (mascarados).
  *
  * Login: na TV, pelo PC
- *   ares-launch br.projetor.cinetv.prova -p '{"servidor":"https://host","usuario":"u","senha":"s"}'
+ *   ares-launch br.projetor.cinetv.prova -p "servidor=http://host:porta" -p "usuario=u" -p "senha=s"
  * No navegador do PC, para testar o codigo: index.html#{"servidor":...,"usuario":...,"senha":...}
  */
 (function () {
@@ -244,7 +244,7 @@
       registrar('Memoria do JS', 'aviso', Math.round(performance.memory.usedJSHeapSize / 1048576) + ' MB usados de ' +
         Math.round(performance.memory.jsHeapSizeLimit / 1048576) + ' MB');
     }
-    estado.textContent = 'Fim. Capture a tela (ares-device --capture-screen) ou leia o console no ares-inspect.';
+    estado.textContent = 'Fim. Tire uma foto desta tela ou copie o console do ares-inspect (usuario e senha ja saem mascarados).';
   }
 
   executar().catch(function (e) { registrar('Erro inesperado', 'falha', String(e)); });
