@@ -331,5 +331,7 @@ export function lerGuia(raiz, agoraMs, atobFn) {
   for (var j = 0; j < programas.length; j++) {
     if (programas[j] !== agora && programas[j].inicio >= (agora ? agora.fim : agoraMs)) { seguinte = programas[j]; break; }
   }
-  return { agora: agora, seguinte: seguinte };
+  // Grade curta para a previa do Ao vivo: o programa atual (ou o proximo) e os seguintes, ate 4
+  var desde = agora ? programas.indexOf(agora) : 0;
+  return { agora: agora, seguinte: seguinte, proximos: programas.slice(desde, desde + 4) };
 }

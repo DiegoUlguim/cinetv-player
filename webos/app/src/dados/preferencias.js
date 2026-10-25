@@ -23,6 +23,8 @@ export var preferencias = {
   },
   qualidade: function () { return ler('qualidade', 'AUTOMATICA'); },
   salvarQualidade: function (q) { gravar('qualidade', q); },
+  previaAoVivo: function () { return ler('previaAoVivo', true); },
+  salvarPreviaAoVivo: function (ligada) { gravar('previaAoVivo', ligada); },
   ultimaAba: function () { return ler('ultimaAba', 0); },
   salvarUltimaAba: function (a) { gravar('ultimaAba', a); },
   velocidade: function () { return ler('velocidade', null); },
