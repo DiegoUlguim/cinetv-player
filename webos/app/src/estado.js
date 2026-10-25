@@ -24,6 +24,7 @@ export var estado = {
 estado.cliente = estado.login ? new ClienteXtream(estado.login) : null;
 
 export var guia = new RepositorioGuia(function () { return estado.cliente; });
+guia.registrar = function (m) { registrar(m); };
 
 export function aoMudar(fn) {
   ouvintes.push(fn);

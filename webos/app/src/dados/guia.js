@@ -55,7 +55,10 @@ RepositorioGuia.prototype.proxima = function () {
     if (!guia) guardar(null, agora + SEM_GUIA_MS);
     else guardar(guia, guia.agora ? guia.agora.fim : agora + SEM_PROGRAMA_MS);
   }, function (erro) {
-    guardar(null, agora + (erro && erro.codigoHttp === 404 ? SEM_GUIA_MS : APOS_FALHA_MS));
+    var semGuia = erro && erro.codigoHttp === 404;
+    // Falha que nao e "sem guia" vai para o log (o Android faz o mesmo): o canal fica sem guia por 5 min
+    if (!semGuia && self.registrar) self.registrar('Guia do canal ' + tarefa.canal.id + ' indisponivel: ' + (erro && erro.message));
+    guardar(null, agora + (semGuia ? SEM_GUIA_MS : APOS_FALHA_MS));
   });
 };
 
