@@ -59,15 +59,27 @@ export function lerCatalogo() {
 
 /**
  * Grava a versao nova e, numa segunda transacao, troca o ponteiro e apaga a anterior.
- * Se nao couber (as duas versoes juntas passam do espaco da TV), apaga a anterior e tenta de novo: perde a troca
- * atomica so nesse caso, e o app segue com o catalogo novo na memoria mesmo se a segunda tentativa falhar.
+ * Na TV de teste as duas versoes juntas passam da cota do IndexedDB (QuotaExceededError na 2a sincronizacao):
+ * nesse caso apaga a anterior e grava de novo. Perde a troca atomica so ai; se a rede cair no meio, a TV fica
+ * sem listas ate a proxima sincronizacao. O app segue com o catalogo novo na memoria mesmo se falhar de novo.
  */
 export function gravarCatalogo(catalogo) {
-  return gravarComTroca(catalogo).catch(function (erro) {
-    return apagarCatalogo().then(function () { return gravarComTroca(catalogo); }).catch(function (erro2) {
-      throw erro2 || erro;
-    });
+  return comReserva(
+    function () { return gravarComTroca(catalogo); },
+    apagarCatalogo,
+  );
+}
+
+/** Tenta gravar; so com falta de espaco libera o que existe e tenta uma segunda vez. Outro erro sobe direto. */
+export function comReserva(gravar, liberar) {
+  return gravar().catch(function (erro) {
+    if (!faltaDeEspaco(erro)) throw erro;
+    return liberar().then(gravar);
   });
+}
+
+export function faltaDeEspaco(erro) {
+  return !!erro && (erro.name === 'QuotaExceededError' || /quota/i.test(erro.message || ''));
 }
 
 function apagarCatalogo() {
