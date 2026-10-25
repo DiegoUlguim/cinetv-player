@@ -8,7 +8,8 @@ A prova não grava nada fora da TV. O login fica só na TV, e usuário e senha a
 
 ## O que precisa
 
-- TV LG de 2021 ou mais nova (webOS 6+), na mesma rede do PC.
+- TV LG de 2019 ou mais nova (webOS 4.5+, por exemplo a SM8600PSA), na mesma rede do PC. A prova é compilada
+  para o navegador mais antigo dessas TVs (Chrome 53).
 - Conta LG de desenvolvedor, gratuita: https://webostv.developer.lge.com (Sign in → Create account).
 - PC com [Node.js](https://nodejs.org) 18 ou mais novo e Git. Os comandos abaixo funcionam no PowerShell, no
   Prompt de Comando e no Bash.

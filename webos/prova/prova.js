@@ -213,7 +213,13 @@
         tocador.load();
         var rm = await new Promise(function (resolver) {
           var relogio = setTimeout(function () { resolver({ ok: false, motivo: 'sem imagem em ' + ESPERA_VIDEO_MS / 1000 + ' s' }); }, ESPERA_VIDEO_MS);
-          video.addEventListener('playing', function () { clearTimeout(relogio); resolver({ ok: true, ms: performance.now() - inicioTs }); }, { once: true });
+          // Sem { once: true }: o Chrome 53 do webOS 4.5 nao conhece a opcao e nunca removeria o ouvinte
+          var aoTocarTs = function () {
+            video.removeEventListener('playing', aoTocarTs);
+            clearTimeout(relogio);
+            resolver({ ok: true, ms: performance.now() - inicioTs });
+          };
+          video.addEventListener('playing', aoTocarTs);
           tocador.on(mpegts.Events.ERROR, function (tipo, detalhe) { clearTimeout(relogio); resolver({ ok: false, motivo: tipo + ' ' + detalhe }); });
           tocador.play();
         });

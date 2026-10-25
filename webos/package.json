@@ -4,12 +4,14 @@
   "description": "CineTV para TVs LG (webOS)",
   "license": "MIT",
   "scripts": {
-    "prova:empacotar": "node scripts/copiar-mpegts.js && ares-package prova -o saida",
+    "prova:empacotar": "npm run prova:compilar && ares-package prova -o saida",
     "prova:instalar": "ares-install saida/br.projetor.cinetv.prova_0.0.1_all.ipk",
-    "prova:abrir": "ares-launch br.projetor.cinetv.prova"
+    "prova:abrir": "ares-launch br.projetor.cinetv.prova",
+    "prova:compilar": "node scripts/copiar-mpegts.js && esbuild prova/prova.js --target=chrome53 --outfile=prova/prova.compilado.js --log-level=warning"
   },
   "devDependencies": {
     "@webos-tools/cli": "3.2.6",
+    "esbuild": "^0.25.11",
     "mpegts.js": "1.8.2"
   }
 }
