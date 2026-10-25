@@ -48,7 +48,9 @@ class RepositorioGuia(private val cliente: () -> ClienteXtream?) {
             val agora = System.currentTimeMillis()
             val entrada = try {
                 val guia = withContext(Dispatchers.IO) { consultar(api, canal.id) }
-                Entrada(guia, guia.agora?.fim ?: (agora + SEM_PROGRAMA_MS))
+                // null: o servidor diz que o canal nao tem guia, como no 404
+                if (guia == null) Entrada(null, agora + SEM_GUIA_MS)
+                else Entrada(guia, guia.agora?.fim ?: (agora + SEM_PROGRAMA_MS))
             } catch (e: CancellationException) {
                 // Item saiu da tela no meio da consulta: nada vai para o cache
                 throw e
@@ -69,11 +71,13 @@ class RepositorioGuia(private val cliente: () -> ClienteXtream?) {
         }
     }
 
-    private fun consultar(api: ClienteXtream, canalId: Int): GuiaCanal {
+    private fun consultar(api: ClienteXtream, canalId: Int): GuiaCanal? {
         Registro.info("Guia: consulta do canal $canalId")
         val texto = api.abrir("get_short_epg", mapOf("stream_id" to canalId.toString(), "limit" to "4"))
             .use { it.readBytes().toString(Charsets.UTF_8) }
-        val lista = LeitorJson.json.parseToJsonElement(texto).jsonObject["epg_listings"] as? JsonArray
+        // Ha servidor que responde [] (200) para canal sem guia, em vez de 404 ou {"epg_listings": []}
+        val raiz = LeitorJson.json.parseToJsonElement(texto) as? JsonObject ?: return null
+        val lista = raiz["epg_listings"] as? JsonArray
         val agora = System.currentTimeMillis()
         val programas = lista.orEmpty()
             .mapNotNull { (it as? JsonObject)?.let(::programa) }
