@@ -84,6 +84,11 @@ Com o app instalado e o aparelho no ADB por rede:
 - `bash medir_desempenho.sh <ip:porta>`: fluidez das listas (gfxinfo) num roteiro fixo de teclas.
 - `bash medir_zapping.sh <id_do_canal> ts 10 <ip:porta>`: tempo de troca de canal.
 
+## Com um agente de IA
+
+Para instalar, configurar ou alterar o app com a ajuda de um agente (Claude Code, Codex, Copilot, Cursor),
+as instruções para ele estão em `AGENTS.md`.
+
 ## Licença
 
 MIT, em `LICENSE`.
