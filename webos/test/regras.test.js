@@ -163,7 +163,8 @@ test('guia: [] e objeto sem epg_listings sao "sem guia"; programa atual e seguin
   ] }, agora, function (b) { return Buffer.from(b, 'base64').toString('latin1'); });
   assert.equal(g.agora.titulo, 'Jornal Nacional');
   assert.equal(g.seguinte.titulo, 'Novela');
-  assert.deepEqual(lerGuia({}, agora), { agora: null, seguinte: null });
+  assert.deepEqual(g.proximos.map(function (p) { return p.titulo; }), ['Jornal Nacional', 'Novela']);
+  assert.deepEqual(lerGuia({}, agora), { agora: null, seguinte: null, proximos: [] });
 });
 
 test('guia: titulo que nao e base64 fica como veio', function () {

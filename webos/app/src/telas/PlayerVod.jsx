@@ -55,11 +55,12 @@ export function PlayerVod(props) {
     };
   }, []);
 
+  // Conta a partir do primeiro quadro (posicao > 0), e nao a cada timeupdate, que reiniciava o tempo sem parar
   useEffect(function () {
     if (!barra || pausado) return undefined;
     var t = setTimeout(function () { setBarra(false); }, BARRA_VISIVEL_MS);
     return function () { clearTimeout(t); };
-  }, [barra, pausado, posicao > 0 ? Math.floor(posicao / 5) : 0]);
+  }, [barra, pausado, posicao > 0]);
 
   function pular(segundos) {
     var v = video.current;

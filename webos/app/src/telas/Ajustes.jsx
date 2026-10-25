@@ -15,9 +15,10 @@ export function Ajustes(props) {
   var login = estado.login || { servidor: '', usuario: '', senha: '' };
   var [campos, setCampos] = useState({ servidor: login.servidor, usuario: login.usuario, senha: login.senha });
   var [qualidade, setQualidade] = useState(preferencias.qualidade());
+  var [previa, setPrevia] = useState(preferencias.previaAoVivo());
   // Sem login, o foco comeca no servidor
-  var itens = ['atualizar', 'qualidade', 'servidor', 'usuario', 'senha', 'salvar'];
-  var [indice, setIndice] = useState(estado.login ? 0 : 2);
+  var itens = ['atualizar', 'qualidade', 'previa', 'servidor', 'usuario', 'senha', 'salvar'];
+  var [indice, setIndice] = useState(estado.login ? 0 : 3);
   var refs = { servidor: useRef(null), usuario: useRef(null), senha: useRef(null) };
   // Login que chegou depois (ares-launch -p ou outra tela): os campos acompanham
   var loginSalvo = estado.login ? estado.login.servidor + '|' + estado.login.usuario : '';
@@ -54,6 +55,7 @@ export function Ajustes(props) {
       setQualidade(nova);
       return true;
     }
+    if (item === 'previa') { preferencias.salvarPreviaAoVivo(!previa); setPrevia(!previa); return true; }
     if (item === 'salvar' && campos.servidor.trim() && campos.usuario.trim() && campos.senha.trim()) {
       entrar(campos.servidor, campos.usuario, campos.senha);
       setIndice(0);
@@ -96,6 +98,10 @@ export function Ajustes(props) {
       </div>
       <Botao focado={props.focado && item === 'qualidade'}>{'Qualidade: ' + ROTULO_PREFERENCIA[qualidade]}</Botao>
       <div class="nota">Automática: FHD a partir de 10 Mbps, HD a partir de 6 Mbps, SD abaixo disso. Se travar, desce sozinha.</div>
+
+      <div class="secao">Ao vivo</div>
+      <Botao focado={props.focado && item === 'previa'}>{'Prévia do canal com som: ' + (previa ? 'Ligada' : 'Desligada')}</Botao>
+      <div class="nota">Toca o canal em foco ao lado da lista, com a programação embaixo. Desligue se a TV ficar lenta.</div>
 
       <div class="secao">Login do servidor</div>
       {campo('servidor', 'Servidor (ex.: http://servidor.com:80)', 'text')}
