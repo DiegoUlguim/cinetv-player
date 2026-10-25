@@ -253,5 +253,16 @@
     estado.textContent = 'Fim. Tire uma foto desta tela ou copie o console do ares-inspect (usuario e senha ja saem mascarados).';
   }
 
+  // App ja aberto: o ares-launch -p entrega os parametros no evento de reabertura, e nao no
+  // PalmSystem.launchParams. Guarda o login e recomeca a prova do zero.
+  document.addEventListener('webOSRelaunch', function (evento) {
+    var dados = evento && evento.detail;
+    if (typeof dados === 'string') { try { dados = JSON.parse(dados); } catch (e) { dados = null; } }
+    if (dados && dados.servidor && dados.usuario && dados.senha) {
+      localStorage.setItem('prova_login', JSON.stringify(dados));
+      location.reload();
+    }
+  });
+
   executar().catch(function (e) { registrar('Erro inesperado', 'falha', String(e)); });
 })();
