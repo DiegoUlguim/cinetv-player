@@ -2,7 +2,7 @@
 // Regras do Android (TelaAoVivo.kt): o grupo em foco so abre depois de 300 ms parado; a direita confirma na hora
 // e entra no ultimo canal usado no grupo (ou no primeiro); a esquerda volta ao grupo selecionado.
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { ItemLinha, ListaVertical } from '../componentes.jsx';
+import { ItemLinha, linhasQueCabem, ListaVertical } from '../componentes.jsx';
 import { alternarFavorito, estado, favoritosDoTipo, guia } from '../estado.js';
 
 var ESPERA_TROCA_GRUPO_MS = 300;
@@ -104,14 +104,14 @@ export function AoVivo(props) {
   return (
     <div class="ao-vivo">
       <ListaVertical
-        classe="grupos" itens={lista} indice={indiceGrupo} visiveis={13} altura={3.6}
+        classe="grupos" itens={lista} indice={indiceGrupo} visiveis={linhasQueCabem(3.6, 7)} altura={3.6}
         focada={props.focado && area === 'grupos'} chave={function (g) { return g.id; }}
         render={function (g, i, focado) {
           return <ItemLinha focado={focado} selecionado={g.id === grupoId}><span class="texto">{g.nome}</span></ItemLinha>;
         }}
       />
       <ListaVertical
-        key={grupoId} classe="canais" itens={canais} indice={area === 'canais' ? indiceCanal : 0} visiveis={11} altura={4.2}
+        key={grupoId} classe="canais" itens={canais} indice={area === 'canais' ? indiceCanal : 0} visiveis={linhasQueCabem(4.2, 7)} altura={4.2}
         focada={props.focado && area === 'canais'} chave={function (c) { return c.id; }}
         render={function (c, i, focado) {
           return (

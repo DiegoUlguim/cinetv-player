@@ -1,7 +1,7 @@
 // Busca em canais, filmes e series: cada palavra e prefixo, sem acento. Campo nativo (teclado da TV).
 // Regras do Android: cursor no fim ao voltar ao campo; cada busca nova recomeca do primeiro resultado.
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { Capa, Fileira, ItemLinha } from '../componentes.jsx';
+import { Capa, Fileira, itensQueCabem, ItemLinha } from '../componentes.jsx';
 import { estado, nomeNormalizado } from '../estado.js';
 import { bateBusca, palavrasDaBusca } from '../dados/regras.js';
 
@@ -95,9 +95,9 @@ export function Busca(props) {
           <div key={resultados.texto + ':' + l.chave} class="bloco-resultado">
             <div class="titulo-fileira">{l.titulo}</div>
             {l.tipo === 'canal'
-              ? <Fileira itens={l.itens} indice={col} focada={focada} largura={20} altura={3.6} visiveis={6}
+              ? <Fileira itens={l.itens} indice={col} focada={focada} largura={20} altura={3.6} visiveis={itensQueCabem(20, 6)}
                   render={function (c, j, focado) { return <ItemLinha focado={focado}><span class="texto">{c.nomeBase}</span></ItemLinha>; }} />
-              : <Fileira itens={l.itens} indice={col} focada={focada} largura={9} altura={12.5} visiveis={11}
+              : <Fileira itens={l.itens} indice={col} focada={focada} largura={9} altura={12.5} visiveis={itensQueCabem(9, 6)}
                   render={function (item, j, focado) { return <Capa src={item.capa} nome={item.nome} focado={focado} />; }} />}
           </div>
         );

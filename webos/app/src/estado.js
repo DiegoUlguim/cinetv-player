@@ -66,11 +66,16 @@ export function sincronizarSePreciso(forcar) {
     passo = sincronizar(estado.cliente, Date.now(), function (etapa) { estado.etapa = etapa; avisar(); })
       .then(function (r) {
         registrar('Sincronizacao: ' + JSON.stringify(r.resumo));
-        return gravarCatalogo(r.catalogo).then(function () { estado.indice = indexar(r.catalogo); });
+        // O catalogo novo vale na hora, mesmo que a TV nao consiga guardar (vai baixar de novo na proxima abertura)
+        estado.indice = indexar(r.catalogo);
+        return gravarCatalogo(r.catalogo).catch(function (e) {
+          registrar('Falha ao guardar as listas na TV: ' + (e && (e.name + ' ' + e.message)));
+          estado.erro = 'Listas atualizadas, mas a TV não conseguiu guardá-las';
+        });
       })
       .catch(function (e) {
-        registrar('Falha na sincronizacao: ' + (e && e.message));
-        estado.erro = e instanceof ErroServidor ? e.message : 'Não foi possível atualizar as listas';
+        registrar('Falha na sincronizacao: ' + (e && (e.name + ' ' + e.message)));
+        estado.erro = e instanceof ErroServidor ? e.message : 'Não foi possível atualizar as listas (' + (e && (e.name || e.message)) + ')';
       })
       .then(function () { estado.sincronizando = false; estado.etapa = null; avisar(); });
   }

@@ -57,8 +57,28 @@ export function lerCatalogo() {
   });
 }
 
-/** Grava a versao nova e, numa segunda transacao, troca o ponteiro e apaga a anterior. */
+/**
+ * Grava a versao nova e, numa segunda transacao, troca o ponteiro e apaga a anterior.
+ * Se nao couber (as duas versoes juntas passam do espaco da TV), apaga a anterior e tenta de novo: perde a troca
+ * atomica so nesse caso, e o app segue com o catalogo novo na memoria mesmo se a segunda tentativa falhar.
+ */
 export function gravarCatalogo(catalogo) {
+  return gravarComTroca(catalogo).catch(function (erro) {
+    return apagarCatalogo().then(function () { return gravarComTroca(catalogo); }).catch(function (erro2) {
+      throw erro2 || erro;
+    });
+  });
+}
+
+function apagarCatalogo() {
+  return abrirBanco().then(function (db) {
+    var tx = db.transaction('catalogo', 'readwrite');
+    tx.objectStore('catalogo').clear();
+    return fimDaTransacao(tx);
+  });
+}
+
+function gravarComTroca(catalogo) {
   return abrirBanco().then(function (db) {
     var ler = db.transaction('catalogo', 'readonly');
     return pedido(ler.objectStore('catalogo').get('atual')).then(function (atual) {

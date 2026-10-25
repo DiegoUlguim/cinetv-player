@@ -1,6 +1,20 @@
 // Listas virtualizadas (so os itens visiveis existem no DOM) e itens com foco, sem animacao: a TV e de 2019.
 import { useRef } from 'preact/hooks';
 
+function remEmPx() {
+  return parseFloat(window.getComputedStyle(document.documentElement).fontSize) || 16;
+}
+
+/** Quantas linhas de alturaRem cabem na altura da tela, tirando reservaRem (topo, margens). Na TV sobrava espaco. */
+export function linhasQueCabem(alturaRem, reservaRem) {
+  return Math.max(3, Math.floor((window.innerHeight / remEmPx() - reservaRem) / alturaRem));
+}
+
+/** Quantos itens de larguraRem cabem na largura da tela, mais um cortado na borda. */
+export function itensQueCabem(larguraRem, reservaRem) {
+  return Math.max(3, Math.ceil((window.innerWidth / remEmPx() - reservaRem) / larguraRem) + 1);
+}
+
 /** Primeiro item visivel, mudando so quando o foco sai da janela (rolagem por pagina, sem pular a cada tecla). */
 export function useJanela(indice, visiveis, total) {
   var topo = useRef(0);

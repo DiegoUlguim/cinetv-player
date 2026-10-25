@@ -2,7 +2,7 @@
 // parou; a direita no ultimo botao vai ao episodio de retomar; a esquerda volta ao botao principal; subir do
 // primeiro episodio vai a temporada atual; fim de episodio oferece o proximo em 10 s.
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { Botao, ItemLinha, ListaVertical, Fileira, tempo } from '../componentes.jsx';
+import { Botao, ItemLinha, linhasQueCabem, ListaVertical, Fileira, tempo } from '../componentes.jsx';
 import { alternarFavorito, ehFavorito, estado, progressoDe, recentes, registrar } from '../estado.js';
 import { acharEpisodio, lerSerie, mapearDetalheFilme, proximoEpisodio } from '../dados/regras.js';
 
@@ -186,7 +186,7 @@ export function DetalheSerie(props) {
               render={function (t, j, focado) { return <ItemLinha focado={focado} selecionado={t === temporadaAtual}><span class="texto">{'Temporada ' + t}</span></ItemLinha>; }} />
           : null}
         <ListaVertical
-          key={temporadaAtual} itens={episodios} indice={indiceEp} visiveis={10} altura={4.4} focada={props.ativa && area === 'episodios'}
+          key={temporadaAtual} itens={episodios} indice={indiceEp} visiveis={linhasQueCabem(4.4, temporadas.length > 1 ? 9.5 : 5.2)} altura={4.4} focada={props.ativa && area === 'episodios'}
           chave={function (e) { return e.id; }}
           render={function (e, j, focado) {
             var p = progressoDe('episodio:' + e.id);

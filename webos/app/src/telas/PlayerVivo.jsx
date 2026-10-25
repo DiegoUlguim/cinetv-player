@@ -2,7 +2,7 @@
 // abrir), espera de 400 ms no zapping, qualidade pela variante (FHD/HD/SD) e rebaixamento com 2 travadas em 60 s,
 // nova tentativa ate 2 vezes, e a conexao e liberada ao sair (Voltar ou Home). Canal em .ts no player da TV (T0).
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { Botao, hora, ItemLinha, ListaVertical } from '../componentes.jsx';
+import { Botao, hora, ItemLinha, linhasQueCabem, ListaVertical } from '../componentes.jsx';
 import { alternarFavorito, ehFavorito, estado, guia, registrar } from '../estado.js';
 import { preferencias } from '../dados/preferencias.js';
 import { escolherVariante, qualidadeAlvo, varianteAbaixo } from '../dados/regras.js';
@@ -188,7 +188,7 @@ export function PlayerVivo(props) {
       ) : null}
       {lista ? (
         <div class="lista-lateral">
-          <ListaVertical itens={canais} indice={indiceLista} visiveis={13} altura={3.6} focada={true}
+          <ListaVertical itens={canais} indice={indiceLista} visiveis={linhasQueCabem(3.6, 2.6)} altura={3.6} focada={true}
             chave={function (c) { return c.id; }}
             render={function (c, i, focado) { return <ItemLinha focado={focado} selecionado={i === indice}><span class="texto">{c.nomeBase}</span></ItemLinha>; }} />
         </div>

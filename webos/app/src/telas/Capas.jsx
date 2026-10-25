@@ -1,12 +1,11 @@
 // Filmes e Series: "Continuar assistindo" e "Minha lista" no topo, uma fileira por categoria.
 // Cada fileira lembra a ultima capa (focusRestorer do Android); altura fixa, para a lista nao pular na subida.
 import { useRef, useState } from 'preact/hooks';
-import { Capa, Fileira, useJanela } from '../componentes.jsx';
+import { Capa, Fileira, itensQueCabem, useJanela } from '../componentes.jsx';
 import { alternarFavorito, ehFavorito, estado, favoritosDoTipo, recentes } from '../estado.js';
 
 var ALTURA_FILEIRA = 17; // rem: titulo + capa
 var LARGURA_CAPA = 9; // rem: capa 8 + espaco
-var FILEIRAS_VISIVEIS = 4;
 
 function fileiras(tipo) {
   var ix = estado.indice;
@@ -40,6 +39,8 @@ export function Capas(props) {
   var l = Math.min(linha, Math.max(0, lista.length - 1));
   var atual = lista[l];
   var coluna = atual ? Math.min(colunas.current[atual.chave] || 0, atual.itens.length - 1) : 0;
+  // Fileiras inteiras que cabem abaixo das abas (6 rem) e acima do rodape (3 rem), mais uma cortada
+  var FILEIRAS_VISIVEIS = Math.max(2, Math.ceil((window.innerHeight / (parseFloat(window.getComputedStyle(document.documentElement).fontSize) || 16) - 9) / ALTURA_FILEIRA));
   var topo = useJanela(l, FILEIRAS_VISIVEIS - 1, lista.length);
 
   props.teclas.atual = function (acao) {
@@ -69,7 +70,7 @@ export function Capas(props) {
       <div key={f.chave} class="bloco-fileira" style={'top:' + (i - topo) * ALTURA_FILEIRA + 'rem'}>
         <div class="titulo-fileira">{f.titulo}</div>
         <Fileira
-          itens={f.itens} indice={colunaAqui} focada={focadaAqui} largura={LARGURA_CAPA} altura={12.5} visiveis={11}
+          itens={f.itens} indice={colunaAqui} focada={focadaAqui} largura={LARGURA_CAPA} altura={12.5} visiveis={itensQueCabem(LARGURA_CAPA, 3)}
           chave={function (item) { return item.id; }}
           render={function (item, j, focado) {
             return <Capa src={item.capa} nome={item.nome} focado={focado} favorito={ehFavorito(props.tipo, item)} />;
