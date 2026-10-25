@@ -4,6 +4,8 @@
 // no primeiro fetch, entao a versao nova e gravada inteira (a TV de teste tem 1 GB de limite de memoria e leu
 // os 9 MB de filmes em 1,2 s) e so depois o ponteiro "atual" troca, junto com a exclusao da versao antiga.
 
+import { compactar, expandir } from './compacto.js';
+
 var NOME = 'cinetv';
 var VERSAO_ESQUEMA = 1;
 var abrindo = null;
@@ -52,8 +54,20 @@ export function lerCatalogo() {
         return atual ? pedido(loja.get('v' + atual)) : null;
       });
     }).then(function (catalogo) {
-      return fimDaTransacao(tx).then(function () { return catalogo || null; });
+      return fimDaTransacao(tx).then(function () { return catalogo ? expandir(catalogo) : null; });
     });
+  });
+}
+
+/**
+ * Espaco usado e cota do armazenamento da TV, em bytes (API do Chrome antigo), ou null se a TV nao informar.
+ * Vai para o log a cada sincronizacao: e o numero que diz se o catalogo cabe.
+ */
+export function espacoUsado() {
+  var api = typeof navigator !== 'undefined' && navigator.webkitTemporaryStorage;
+  if (!api) return Promise.resolve(null);
+  return new Promise(function (resolver) {
+    api.queryUsageAndQuota(function (usado, cota) { resolver({ usado: usado, cota: cota }); }, function () { resolver(null); });
   });
 }
 
@@ -64,8 +78,9 @@ export function lerCatalogo() {
  * sem listas ate a proxima sincronizacao. O app segue com o catalogo novo na memoria mesmo se falhar de novo.
  */
 export function gravarCatalogo(catalogo) {
+  var guardado = compactar(catalogo);
   return comReserva(
-    function () { return gravarComTroca(catalogo); },
+    function () { return gravarComTroca(guardado); },
     apagarCatalogo,
   );
 }

@@ -1,5 +1,5 @@
 // Estado do app fora das telas: login, catalogo indexado, guia e dados do usuario (progresso e favoritos).
-import { favoritos as lojaFavoritos, progresso as lojaProgresso, gravarCatalogo, lerCatalogo } from './dados/banco.js';
+import { favoritos as lojaFavoritos, progresso as lojaProgresso, espacoUsado, gravarCatalogo, lerCatalogo } from './dados/banco.js';
 import { RepositorioGuia } from './dados/guia.js';
 import { medirVelocidadeSePreciso, preferencias } from './dados/preferencias.js';
 import { mascarar, semAcento } from './dados/regras.js';
@@ -71,6 +71,9 @@ export function sincronizarSePreciso(forcar) {
         return gravarCatalogo(r.catalogo).catch(function (e) {
           registrar('Falha ao guardar as listas na TV: ' + (e && (e.name + ' ' + e.message)));
           estado.erro = 'Listas atualizadas, mas a TV não conseguiu guardá-las';
+        }).then(espacoUsado).then(function (espaco) {
+          var mb = function (b) { return (b / 1048576).toFixed(1) + ' MB'; };
+          if (espaco) registrar('Armazenamento: ' + mb(espaco.usado) + ' usados de ' + mb(espaco.cota));
         });
       })
       .catch(function (e) {
