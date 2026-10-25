@@ -53,6 +53,12 @@ npx ares-install -d tv saida/br.projetor.cinetv.prova_0.0.1_all.ipk
 npx ares-launch -d tv br.projetor.cinetv.prova -p "servidor=http://host:porta" -p "usuario=SEU_USUARIO" -p "senha=SUA_SENHA"
 ```
 
+Se a tela mostrar "Sem login", feche a prova e abra de novo com o comando acima:
+
+```
+npx ares-launch -d tv -c br.projetor.cinetv.prova
+```
+
 A prova leva de 3 a 5 minutos: testa a API, a lista de filmes, o servidor de vídeo, 12 canais ao vivo, um
 filme e as faixas de áudio e legenda. Feche o app do servidor em outros aparelhos antes, porque muitas contas
 aceitam uma conexão só.
