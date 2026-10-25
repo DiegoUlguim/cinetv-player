@@ -1,0 +1,14 @@
+{
+  "id": "br.projetor.cinetv",
+  "version": "0.1.0",
+  "vendor": "CineTV",
+  "type": "web",
+  "main": "index.html",
+  "title": "CineTV",
+  "icon": "icone.png",
+  "largeIcon": "icone-grande.png",
+  "bgColor": "#0e0f12",
+  "resolution": "1920x1080",
+  "disableBackHistoryAPI": true,
+  "requiredACG": []
+}

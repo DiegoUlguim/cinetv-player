@@ -1,0 +1,111 @@
+/* Tema do app Android (Tema.kt): fundo quase preto, foco com fundo claro e texto escuro, sem animacao (TV de 2019).
+   Tamanhos em rem: 1 rem = 16 px numa tela de 1920 de largura (main.jsx ajusta pela largura). */
+:root {
+  --fundo: #0e0f12;
+  --superficie: #1b1d22;
+  --variante: #2a2d33;
+  --texto: #e8eaed;
+  --texto-fraco: #9aa0a6;
+  --destaque: #f2b84b;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--fundo); color: var(--texto); font-family: 'LG Smart UI', Roboto, 'Segoe UI', sans-serif; overflow: hidden; }
+#app, .app, .camada { position: absolute; inset: 0; top: 0; left: 0; right: 0; bottom: 0; }
+
+/* Principal */
+.principal { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+.topo { display: flex; align-items: center; justify-content: space-between; padding: 1.6rem 3rem 1rem; height: 6rem; }
+.abas { display: flex; }
+.aba { padding: 0.5rem 1.6rem; margin-right: 0.6rem; border-radius: 2rem; font-size: 1.5rem; color: var(--texto-fraco); }
+.aba.atual { color: var(--texto); background: var(--variante); }
+.aba.focada { background: var(--texto); color: var(--fundo); }
+.aviso { font-size: 1.1rem; color: var(--texto-fraco); }
+.conteudo { position: absolute; top: 6rem; left: 0; right: 0; bottom: 0; }
+.vazio { padding: 3rem; color: var(--texto-fraco); font-size: 1.4rem; }
+
+/* Listas */
+.lista-vertical { position: relative; overflow: hidden; }
+.linha-virtual { position: absolute; left: 0; right: 0; padding: 0.1rem 0; }
+.item-linha { display: flex; align-items: center; height: 100%; padding: 0 1.2rem; border-radius: 0.5rem; overflow: hidden; }
+.item-linha.selecionado { background: var(--variante); }
+.item-linha.focado { background: var(--texto); color: var(--fundo); }
+.item-linha .texto { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 1.15rem; }
+.item-linha .textos { display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+.subtitulo { font-size: 0.9rem; color: var(--texto-fraco); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.item-linha.focado .subtitulo { color: #4a4d55; }
+
+.fileira { position: relative; overflow: hidden; }
+.item-fileira { position: absolute; top: 0; bottom: 0; padding-right: 1rem; }
+
+/* Ao vivo */
+.ao-vivo { display: flex; padding: 0 2rem; }
+.grupos { width: 19rem; flex: none; }
+.canais { flex: 1; margin-left: 1.5rem; }
+.logo { width: 4rem; height: 2.4rem; flex: none; margin-right: 1.2rem; display: flex; align-items: center; justify-content: center; }
+.logo img { max-width: 100%; max-height: 100%; }
+
+/* Capas */
+.capas { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+.area-fileiras { position: absolute; top: 0; left: 0; right: 0; bottom: 3rem; overflow: hidden; }
+.bloco-fileira { position: absolute; left: 3rem; right: 0; height: 17rem; }
+.titulo-fileira { font-size: 1.25rem; margin-bottom: 0.6rem; height: 2rem; white-space: nowrap; overflow: hidden; }
+.capa { position: relative; width: 8rem; height: 12rem; border-radius: 0.5rem; overflow: hidden; background: var(--superficie); border: 0.2rem solid transparent; }
+.capa.focado { border-color: var(--texto); }
+.capa img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.capa-nome { display: block; padding: 0.6rem; font-size: 0.9rem; color: var(--texto-fraco); }
+.selo { position: absolute; top: 0.3rem; right: 0.4rem; color: var(--destaque); font-size: 1.1rem; text-shadow: 0 0 0.3rem #000; }
+.rodape-capa { position: absolute; left: 3rem; bottom: 0.8rem; font-size: 1.1rem; color: var(--texto-fraco); white-space: nowrap; }
+
+/* Busca e Ajustes */
+.busca { padding: 0 3rem; }
+.campo { width: 40rem; font-size: 1.3rem; padding: 0.8rem 1rem; background: var(--superficie); color: var(--texto); border: 0.15rem solid var(--variante); border-radius: 0.5rem; outline: none; }
+.campo.focado { border-color: var(--texto); }
+.bloco-resultado { margin-top: 1.4rem; }
+.vazio-linha { margin-top: 1.4rem; color: var(--texto-fraco); }
+.ajustes { padding: 0 3rem 3rem; height: 100%; overflow: hidden; }
+.secao { color: var(--destaque); font-size: 1.25rem; margin: 1.4rem 0 0.6rem; }
+.info { margin-bottom: 0.7rem; font-size: 1.1rem; }
+.rotulo { font-size: 0.9rem; color: var(--texto-fraco); margin-bottom: 0.2rem; }
+.nota { font-size: 0.9rem; color: var(--texto-fraco); margin-top: 0.5rem; }
+.campo-ajuste { margin-bottom: 0.7rem; }
+
+/* Botoes */
+.botao { display: inline-block; padding: 0.7rem 1.6rem; margin: 0.4rem 0.8rem 0.4rem 0; border-radius: 2rem; background: var(--variante); font-size: 1.15rem; }
+.botao.secundario { background: transparent; border: 0.12rem solid var(--variante); }
+.botao.focado { background: var(--texto); color: var(--fundo); border-color: var(--texto); }
+.botoes { margin-top: 1.6rem; }
+
+/* Detalhes */
+.detalhe { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--fundo); }
+.fundo-detalhe, .fundo-detalhe img, .escurecer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+.fundo-detalhe img { object-fit: cover; }
+.escurecer { background: linear-gradient(to right, rgba(14, 15, 18, 0.96), rgba(14, 15, 18, 0.85) 45%, rgba(14, 15, 18, 0.35)); }
+.coluna-detalhe { position: absolute; left: 3.5rem; top: 0; bottom: 0; width: 60%; display: flex; flex-direction: column; justify-content: center; }
+.coluna-detalhe.estreita { width: 30rem; }
+.titulo-detalhe { font-size: 2.6rem; font-weight: 500; }
+.linha-detalhe { margin-top: 0.8rem; color: var(--texto-fraco); font-size: 1.1rem; }
+.sinopse { margin-top: 1.2rem; font-size: 1.15rem; line-height: 1.45; max-height: 10.2rem; overflow: hidden; }
+.elenco { margin-top: 0.8rem; color: var(--texto-fraco); font-size: 0.95rem; max-height: 2.8rem; overflow: hidden; }
+.erro { margin-top: 1rem; color: var(--destaque); }
+.coluna-episodios { position: absolute; left: 36rem; right: 2rem; top: 3rem; bottom: 2rem; }
+.coluna-episodios .fileira { margin-bottom: 0.8rem; }
+.numero-ep { width: 3rem; flex: none; }
+.aviso-proximo { position: absolute; right: 2rem; bottom: 2rem; width: 28rem; padding: 1.5rem; background: rgba(14, 15, 18, 0.95); border-radius: 0.8rem; }
+.rotulo-aviso { color: var(--destaque); }
+.titulo-aviso { margin-top: 0.4rem; font-size: 1.25rem; }
+
+/* Players */
+.player { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #000; }
+.video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; }
+.mensagem-player { position: absolute; left: 50%; top: 50%; width: 46rem; margin-left: -23rem; margin-top: -3rem; padding: 1.4rem 1.8rem; background: rgba(14, 15, 18, 0.92); border-radius: 0.8rem; font-size: 1.2rem; text-align: center; }
+.nome-canal { position: absolute; left: 3rem; top: 2.4rem; padding: 1rem 1.6rem; background: rgba(14, 15, 18, 0.8); border-radius: 0.6rem; max-width: 50rem; }
+.titulo-canal { font-size: 1.6rem; }
+.qualidade { margin-left: 1rem; font-size: 0.9rem; color: var(--texto-fraco); border: 0.1rem solid var(--texto-fraco); border-radius: 0.3rem; padding: 0 0.4rem; vertical-align: middle; }
+.faixa { position: absolute; left: 0; right: 0; bottom: 0; padding: 2rem 3rem; background: linear-gradient(to bottom, rgba(14, 15, 18, 0), rgba(14, 15, 18, 0.95) 35%); }
+.programa { margin-top: 0.5rem; font-size: 1.15rem; }
+.lista-lateral { position: absolute; top: 0; bottom: 0; right: 0; width: 26rem; padding: 1.2rem; background: rgba(14, 15, 18, 0.85); }
+.barra-vod { position: absolute; left: 0; right: 0; bottom: 0; padding: 2rem 3rem; background: linear-gradient(to bottom, rgba(14, 15, 18, 0), rgba(14, 15, 18, 0.95) 40%); }
+.tempo-vod { display: flex; align-items: center; margin-top: 0.8rem; font-size: 1.05rem; }
+.trilho { flex: 1; height: 0.3rem; margin: 0 1rem; background: var(--variante); }
+.preenchido { height: 100%; background: var(--destaque); }
+.dica { margin-top: 0.6rem; font-size: 0.9rem; color: var(--texto-fraco); }

@@ -7,11 +7,21 @@
     "prova:empacotar": "npm run prova:compilar && ares-package prova -o saida",
     "prova:instalar": "ares-install saida/br.projetor.cinetv.prova_0.0.1_all.ipk",
     "prova:abrir": "ares-launch br.projetor.cinetv.prova",
-    "prova:compilar": "node scripts/copiar-mpegts.js && esbuild prova/prova.js --target=chrome53 --outfile=prova/prova.compilado.js --log-level=warning"
+    "prova:compilar": "node scripts/copiar-mpegts.cjs && esbuild prova/prova.js --target=chrome53 --outfile=prova/prova.compilado.js --log-level=warning",
+    "test": "node --test \"test/**/*.test.js\"",
+    "construir": "node scripts/construir.mjs",
+    "empacotar": "node scripts/construir.mjs && ares-package construido -o saida",
+    "instalar": "ares-install -d tv saida/br.projetor.cinetv_0.1.0_all.ipk",
+    "abrir": "ares-launch -d tv br.projetor.cinetv"
   },
   "devDependencies": {
     "@webos-tools/cli": "3.2.6",
     "esbuild": "^0.25.11",
-    "mpegts.js": "1.8.2"
-  }
+    "mpegts.js": "1.8.2",
+    "puppeteer-core": "^24.43.1"
+  },
+  "dependencies": {
+    "preact": "^10.29.8"
+  },
+  "type": "module"
 }

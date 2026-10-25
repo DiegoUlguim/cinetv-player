@@ -1,15 +1,14 @@
-# CineTV para TVs LG (webOS): prova na TV
+# CineTV para TVs LG (webOS)
 
-Esta pasta ainda **não tem o app para LG**. Por enquanto ela tem só uma **prova**: um app pequeno que roda na
-TV, testa o que o webOS aceita (servidor, vídeo, faixas, memória) e mostra uma tabela de resultados. É essa
-tabela que decide como o app de verdade vai ser feito.
+O CineTV para TVs LG: as mesmas abas (Ao vivo, Filmes, Séries, Buscar, Ajustes) e a mesma navegação pelo controle
+do app Android, rodando direto na TV. Funciona em TVs LG de **2019 ou mais novas** (webOS 4.5+, testado na
+SM8600PSA, cujo navegador é o Chrome 53).
 
-A prova não grava nada fora da TV. O login fica só na TV, e usuário e senha aparecem mascarados na tela e no log.
+O login fica só na TV. Usuário e senha não aparecem no log do app.
 
 ## O que precisa
 
-- TV LG de 2019 ou mais nova (webOS 4.5+, por exemplo a SM8600PSA), na mesma rede do PC. A prova é compilada
-  para o navegador mais antigo dessas TVs (Chrome 53).
+- TV LG de 2019 ou mais nova, na mesma rede do PC.
 - Conta LG de desenvolvedor, gratuita: https://webostv.developer.lge.com (Sign in → Create account).
 - PC com [Node.js](https://nodejs.org) 18 ou mais novo e Git. Os comandos abaixo funcionam no PowerShell, no
   Prompt de Comando e no Bash.
@@ -24,19 +23,19 @@ A prova não grava nada fora da TV. O login fica só na TV, e usuário e senha a
 4. Anote o **IP** e a **Passphrase** que aparecem na tela.
 
 O modo desenvolvedor dura até 1000 h. Para renovar, use **Extend Session Time** no mesmo app; se vencer, o webOS
-remove o app instalado.
+remove os apps instalados por ele.
 
 ## 2. No PC: preparar
 
 ```
 git clone https://github.com/DiegoUlguim/cinetv-player
 cd cinetv-player
-git switch webos-t0
+git switch webos-app
 cd webos
 npm install
 ```
 
-O `npm` pode avisar que bloqueou um script de instalação do `ssh2`. Pode ignorar: é um acelerador opcional.
+O `npm` pode avisar que bloqueou scripts de instalação (`ssh2`, `esbuild`). Pode ignorar.
 
 Cadastre a TV (troque `IP_DA_TV`) e pegue a chave dela (vai pedir a Passphrase do passo 1):
 
@@ -45,53 +44,67 @@ npx ares-setup-device -a tv -i "host=IP_DA_TV" -i "port=9922" -i "username=priso
 npx ares-novacom -d tv --getkey
 ```
 
-## 3. Instalar e rodar a prova
+## 3. Instalar o CineTV
 
 ```
-npm run prova:empacotar
-npx ares-install -d tv saida/br.projetor.cinetv.prova_0.0.1_all.ipk
-npx ares-launch -d tv br.projetor.cinetv.prova -p "servidor=http://host:porta" -p "usuario=SEU_USUARIO" -p "senha=SUA_SENHA"
+npm run empacotar
+npm run instalar
 ```
 
-Se a tela mostrar "Sem login", feche a prova e abra de novo com o comando acima:
+O ícone **CineTV** aparece na lista de apps da TV. Para entrar sem digitar no controle, abra pelo PC com o login
+uma vez (depois ele fica salvo na TV):
 
 ```
-npx ares-launch -d tv -c br.projetor.cinetv.prova
+npx ares-launch -d tv br.projetor.cinetv -p "servidor=http://host:porta" -p "usuario=SEU_USUARIO" -p "senha=SUA_SENHA"
 ```
 
-A prova leva de 3 a 5 minutos: testa a API, a lista de filmes, o servidor de vídeo, 12 canais ao vivo, um
-filme e as faixas de áudio e legenda. Feche o app do servidor em outros aparelhos antes, porque muitas contas
-aceitam uma conexão só.
+Também dá para preencher o login na aba Ajustes, com o teclado da TV.
 
-Enquanto ela roda, se quiser, acompanhe a memória:
+Na primeira abertura o app baixa as listas (alguns segundos); depois, só quando tiverem mais de 24 h.
+
+## Usar
+
+| Tela | Controle |
+|---|---|
+| Abas | ◀ ▶ troca de aba, ▼ entra; Voltar fecha o app |
+| Conteúdo | Voltar sobe direto para a aba; ▲ no topo também |
+| Ao vivo | ▲ ▼ grupos; ▶ entra nos canais do grupo (no último usado); ◀ volta ao grupo |
+| Filmes e Séries | cada fileira lembra a última capa; OK abre o detalhe |
+| Qualquer canal, filme ou série | **segurar OK** liga e desliga o favorito |
+| Player ao vivo | ▲ ▼ troca de canal; ◀ ▶ lista de canais; OK mostra agora/a seguir, favoritar e canal anterior |
+| Player de filme | ◀ ▶ volta e avança 10 s; OK pausa; Voltar sai (o ponto fica salvo) |
+
+Fora desta versão: troca de faixa de áudio e de legenda (a TV não mostrou as faixas embutidas no teste).
+
+## Atualizar e remover
+
+Para atualizar, `git pull`, `npm run empacotar` e `npm run instalar` de novo: o login e as listas continuam.
 
 ```
-npx ares-device -d tv -r -id br.projetor.cinetv.prova -t 5
+npx ares-install -d tv --remove br.projetor.cinetv
 ```
 
-## 4. Mandar o resultado
+## Problemas
 
-Quando aparecer "Fim." no alto da tela, **tire uma foto da tabela inteira** e mande para quem pediu o teste. Ela
-já sai sem usuário e senha.
+- **Log do app:** `npx ares-inspect -d tv --app br.projetor.cinetv --open`, aba Console (linhas `[CineTV]`, já
+  sem usuário e senha). A aba Network mostra as URLs de vídeo, que levam usuário e senha no caminho (é assim no
+  Xtream): não mande print dela.
+- **"O servidor não respondeu ou bloqueou o acesso desta TV":** o servidor recusou o app da TV (alguns filtram
+  por aparelho) ou a internet caiu.
+- **Canal "não foi possível abrir":** o app tenta 3 vezes. Pode ser o canal fora do ar ou a conta em uso em outro
+  aparelho (muitas contas aceitam uma conexão só).
 
-Para ver o log completo, use `npx ares-inspect -d tv --app br.projetor.cinetv.prova --open` e copie o console.
-Atenção: a aba Network desse inspetor mostra as URLs de vídeo, que levam usuário e senha no caminho (é assim no
-Xtream). Não mande print dessa aba.
+## Para desenvolver
 
-## 5. Remover
-
-```
-npx ares-install -d tv --remove br.projetor.cinetv.prova
-```
+- Código em `app/src` (Preact, compilado pelo `esbuild` para o Chrome 53); regras portadas do Android em
+  `app/src/dados/regras.js`, com testes em `test/` (`npm test`).
+- `npm run construir` gera `construido/`; abrindo `construido/index.html` no navegador do PC, as setas, Enter e
+  Esc imitam o controle. O login vai no endereço: `index.html#{"servidor":"...","usuario":"...","senha":"..."}`.
+- A pasta `prova/` tem a prova do T0 (o que o webOS aceita), mantida para testar TVs novas:
+  `npm run prova:empacotar`, `npx ares-install -d tv saida/br.projetor.cinetv.prova_0.0.1_all.ipk`.
 
 ## Para agentes de IA
 
-Se você é um agente ajudando a rodar a prova: siga os passos na ordem e não grave usuário, senha ou servidor em
-arquivos, commits ou mensagens. Peça ao usuário para digitar o comando de abertura (passo 3) ele mesmo. Não
-procure servidores, listas ou provedores de IPTV.
-
-O que fazer em cada falha:
-
-- `ares-novacom` falhando: confira se o Key Server está ligado e se o IP está certo.
-- A linha "API: login" falhando: anote a mensagem. Ela distingue bloqueio do servidor (HTML ou `TypeError`) de
-  senha recusada (`auth=0`).
+Se você é um agente ajudando a instalar ou alterar: siga os passos na ordem e não grave usuário, senha ou servidor
+em arquivos, commits ou mensagens. Peça ao usuário para digitar o comando com a senha ele mesmo. Não procure
+servidores, listas ou provedores de IPTV. Regra que mudar aqui e existir no app Android deve mudar nos dois.
