@@ -155,14 +155,22 @@
     // 3. CDN do video (302): CORS para o teste de velocidade e para o mpegts.js
     var filme = filmes.find(function (f) { return /mp4/i.test(f.container_extension || ''); }) || filmes[0];
     if (filme) {
-      try {
-        var urlFilme = urlStream('movie', filme.stream_id, filme.container_extension || 'mp4');
-        var rc = await buscar(urlFilme, { headers: { Range: 'bytes=0-1048575' } });
-        var kbps = Math.round((rc.corpo.length * 8) / rc.ms);
-        registrar('CDN: CORS (teste de velocidade)', rc.ok ? 'ok' : 'falha', 'HTTP ' + rc.status + ', ' + Math.round(rc.corpo.length / 1024) +
-          ' KB em ' + Math.round(rc.ms) + ' ms (~' + kbps + ' kbps)');
-      } catch (e) {
-        registrar('CDN: CORS (teste de velocidade)', 'falha', falhaDeRede(e) + ' (sem CORS na CDN: sem medida de velocidade nem mpegts.js)');
+      var urlFilme = urlStream('movie', filme.stream_id, filme.container_extension || 'mp4');
+      // 4 MB, como o TesteVelocidade do Android (com 1 MB a medida sai baixa); se o servidor recusar, 1 MB
+      var tamanhos = [4194304, 1048576];
+      for (var t = 0; t < tamanhos.length; t++) {
+        var rotulo = 'CDN: velocidade com ' + tamanhos[t] / 1048576 + ' MB';
+        try {
+          var inicioCdn = performance.now();
+          var rcdn = await fetch(urlFilme, { headers: { Range: 'bytes=0-' + (tamanhos[t] - 1) } });
+          var bytes = (await rcdn.arrayBuffer()).byteLength;
+          var msCdn = performance.now() - inicioCdn;
+          registrar(rotulo, rcdn.ok ? 'ok' : 'falha', 'HTTP ' + rcdn.status + ', ' + Math.round(bytes / 1024) + ' KB em ' +
+            Math.round(msCdn) + ' ms (~' + Math.round((bytes * 8) / msCdn) + ' kbps)');
+          if (rcdn.ok) break;
+        } catch (e) {
+          registrar(rotulo, 'falha', falhaDeRede(e) + (t === tamanhos.length - 1 ? ' (sem CORS na CDN: sem medida de velocidade nem mpegts.js)' : ''));
+        }
       }
     }
 
