@@ -3,6 +3,7 @@ import { render } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import './estilo.css';
 import { aoMudar, carregar, entrar, estado, registrar, sincronizarSePreciso } from './estado.js';
+import { preferencias } from './dados/preferencias.js';
 import { proximoEpisodio } from './dados/regras.js';
 import { definirOuvinte } from './teclas.js';
 import { DetalheFilme, DetalheSerie } from './telas/Detalhes.jsx';
@@ -16,6 +17,8 @@ function ajustarEscala() {
 }
 ajustarEscala();
 window.addEventListener('resize', ajustarEscala);
+// Transicoes de CSS (fileira deslizando, card crescendo) so com a opcao ligada em Ajustes
+document.documentElement.className = preferencias.animacoes() ? 'animado' : '';
 
 /** Login pelo ares-launch -p "servidor=..." -p "usuario=..." -p "senha=..." (so com o PC pareado na TV). */
 function loginDosParametros(bruto) {
@@ -32,7 +35,8 @@ function App() {
   var [, setVersao] = useState(0);
   var [pilha, setPilha] = useState([novaTela('principal')]);
 
-  useEffect(function () { return aoMudar(setVersao); }, []);
+  // Redesenha ja ao registrar: se o banco terminou de ler antes deste efeito, o aviso tinha passado sem ninguem ouvir
+  useEffect(function () { setVersao(estado.versao); return aoMudar(setVersao); }, []);
 
   var topo = pilha[pilha.length - 1];
   definirOuvinte(function (acao) { return topo.teclas.atual ? topo.teclas.atual(acao) : false; });
@@ -58,10 +62,11 @@ function App() {
     }));
   }
 
-  function assistirEpisodio(serie, episodio, retomarEm, detalhe) {
-    var semAviso = pilha.map(function (t) { return t.tipo === 'serie' ? Object.assign({}, t, { proximo: null }) : t; });
+  // base: a pilha sobre a qual o player entra (o "Proximo episodio" do player troca o player atual)
+  function assistirEpisodio(serie, episodio, retomarEm, detalhe, base) {
+    var semAviso = (base || pilha).map(function (t) { return t.tipo === 'serie' ? Object.assign({}, t, { proximo: null }) : t; });
     setPilha(semAviso.concat([novaTela('vod', {
-      item: { tipo: 'episodio', id: episodio.id, titulo: serie.nome + '  ·  T' + episodio.temporada + ':E' + episodio.numero + '  ' + episodio.titulo, capa: serie.capa, extensao: episodio.extensao, serieId: serie.id },
+      item: { tipo: 'episodio', id: episodio.id, titulo: serie.nome, subtitulo: 'T' + episodio.temporada + ':E' + episodio.numero + '  ' + episodio.titulo, capa: serie.capa, extensao: episodio.extensao, serieId: serie.id },
       retomarEm: retomarEm, detalhe: detalhe,
     })]));
   }
@@ -83,7 +88,7 @@ function App() {
         var ativa = i === pilha.length - 1;
         var conteudo;
         if (tela.tipo === 'principal') conteudo = <Principal teclas={tela.teclas} ativa={ativa} aoAbrir={abrir} />;
-        else if (tela.tipo === 'filme') conteudo = <DetalheFilme teclas={tela.teclas} ativa={ativa} filme={tela.filme} aoAssistir={assistirFilme} aoFechar={desempilhar} />;
+        else if (tela.tipo === 'filme') conteudo = <DetalheFilme teclas={tela.teclas} ativa={ativa} filme={tela.filme} aoAssistir={assistirFilme} aoAbrir={abrir.filme} aoFechar={desempilhar} />;
         else if (tela.tipo === 'serie') {
           conteudo = (
             <DetalheSerie teclas={tela.teclas} ativa={ativa} serie={tela.serie} proximo={tela.proximo}
@@ -91,7 +96,15 @@ function App() {
               aoCancelarProximo={function () { setPilha(pilha.map(function (t) { return t === tela ? Object.assign({}, t, { proximo: null }) : t; })); }} />
           );
         } else if (tela.tipo === 'vivo') conteudo = <PlayerVivo teclas={tela.teclas} canais={tela.canais} posicao={tela.posicao} aoFechar={desempilhar} />;
-        else conteudo = <PlayerVod teclas={tela.teclas} item={tela.item} retomarEm={tela.retomarEm} aoFechar={function (t) { fecharVod(tela, t); }} />;
+        else {
+          var base = pilha.slice(0, -1);
+          var telaSerie = base[base.length - 1];
+          var proximo = tela.item.tipo === 'episodio' && tela.detalhe && telaSerie && telaSerie.tipo === 'serie' ? proximoEpisodio(tela.detalhe, tela.item.id) : null;
+          conteudo = (
+            <PlayerVod teclas={tela.teclas} item={tela.item} retomarEm={tela.retomarEm} aoFechar={function (t) { fecharVod(tela, t); }}
+              aoProximo={proximo ? function () { assistirEpisodio(telaSerie.serie, proximo, 0, tela.detalhe, base); } : null} />
+          );
+        }
         // Telas de baixo ficam montadas (guardam a posicao), mas escondidas
         return <div key={tela.id} class="camada" style={ativa ? '' : 'display:none'}>{conteudo}</div>;
       })}

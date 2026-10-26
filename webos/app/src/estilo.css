@@ -1,121 +1,244 @@
-/* Tema do app Android (Tema.kt): fundo quase preto, foco com fundo claro e texto escuro, sem animacao (TV de 2019).
-   Tamanhos em rem: 1 rem = 16 px numa tela de 1920 de largura (main.jsx ajusta pela largura). */
+/* Visual do layout aprovado (canvas "CineTV novo layout", 1280 x 720). Cada medida vem do canvas:
+   rem = px do canvas x 0,09375 (1 rem = 16 px numa tela de 1920; main.jsx ajusta pela largura).
+   Unica animacao: o esmaecimento das imagens de fundo (opacidade, barata para a TV de 2019). */
 :root {
-  --fundo: #0e0f12;
-  --superficie: #1b1d22;
-  --variante: #2a2d33;
-  --texto: #e8eaed;
-  --texto-fraco: #9aa0a6;
-  --destaque: #f2b84b;
+  --fundo: #141414;
+  --superficie: #222;
+  --texto: #e5e5e5;
+  --texto-fraco: #a3a3a3;
+  --destaque: #e50914;
+  --nota: #46d369;
+  --botao: rgba(109, 109, 110, 0.7);
 }
 * { box-sizing: border-box; }
-html, body { margin: 0; height: 100%; background: var(--fundo); color: var(--texto); font-family: 'LG Smart UI', Roboto, 'Segoe UI', sans-serif; overflow: hidden; }
-#app, .app, .camada { position: absolute; inset: 0; top: 0; left: 0; right: 0; bottom: 0; }
+html, body { margin: 0; height: 100%; background: var(--fundo); color: var(--texto); font-family: Inter, 'LG Smart UI', sans-serif; -webkit-font-smoothing: antialiased; overflow: hidden; }
+#app, .app, .camada { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+.suave { opacity: 0; transition: opacity 0.35s ease-out; }
+.suave.visivel { opacity: 1; }
 
-/* Principal */
+/* Menu no topo, pequeno, como no video da Netflix: lupa, abas em texto (a atual numa pilula cinza), engrenagem e marca */
 .principal { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
-.topo { display: flex; align-items: center; justify-content: space-between; padding: 1.6rem 3rem 1rem; height: 6rem; }
-.abas { display: flex; }
-.aba { padding: 0.5rem 1.6rem; margin-right: 0.6rem; border-radius: 2rem; font-size: 1.5rem; color: var(--texto-fraco); }
-.aba.atual { color: var(--texto); background: var(--variante); }
-.aba.focada { background: var(--texto); color: var(--fundo); }
-.aviso { font-size: 1.1rem; color: var(--texto-fraco); }
-.conteudo { position: absolute; top: 6rem; left: 0; right: 0; bottom: 0; }
-.vazio { padding: 3rem; color: var(--texto-fraco); font-size: 1.4rem; }
+.conteudo { position: absolute; top: 5rem; left: 0; right: 0; bottom: 0; }
+.menu-topo { position: absolute; top: 0; left: 0; right: 0; height: 5rem; display: flex; align-items: center; padding: 0 3.75rem; background: linear-gradient(to bottom, #141414 75%, rgba(20, 20, 20, 0)); }
+.item-menu { display: flex; align-items: center; margin-right: 0.6rem; padding: 0.45rem 1.2rem; border-radius: 2rem; font-size: 1.35rem; font-weight: 700; color: #a3a3a3; white-space: nowrap; }
+.item-menu.so-icone { padding: 0.45rem 0.7rem; }
+.item-menu.atual { color: #fff; background: rgba(255, 255, 255, 0.18); }
+.item-menu.focado { color: #000; background: #fff; }
+.icone-menu { width: 1.6rem; height: 1.6rem; flex: none; fill: none; stroke: currentColor; stroke-width: 2; }
+.espaco-menu { flex: 1; }
+.aviso { margin-right: 2rem; font-size: 1.1rem; color: var(--texto-fraco); white-space: nowrap; }
+.marca { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.05rem; color: var(--destaque); white-space: nowrap; }
+.vazio { padding: 3rem 3.75rem; color: var(--texto-fraco); font-size: 1.6rem; }
 
 /* Listas */
 .lista-vertical { position: relative; overflow: hidden; }
-.linha-virtual { position: absolute; left: 0; right: 0; padding: 0.1rem 0; }
-.item-linha { display: flex; align-items: center; height: 100%; padding: 0 1.2rem; border-radius: 0.5rem; overflow: hidden; }
-.item-linha.selecionado { background: var(--variante); }
-.item-linha.focado { background: var(--texto); color: var(--fundo); }
-.item-linha .texto { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 1.15rem; }
+.linha-virtual { position: absolute; left: 0; right: 0; }
+.item-linha { display: flex; align-items: center; height: 100%; padding: 0 1.2rem; border-radius: 0.375rem; overflow: hidden; }
+.item-linha.selecionado { background: #2a2a2a; color: #fff; }
+.item-linha.focado { background: #fff; color: #000; }
+.item-linha .texto { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 1.4rem; }
 .item-linha .textos { display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
-.subtitulo { font-size: 0.9rem; color: var(--texto-fraco); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.subtitulo { font-size: 1.1rem; color: var(--texto-fraco); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .item-linha.focado .subtitulo { color: #4a4d55; }
-
 .fileira { position: relative; overflow: hidden; }
-.item-fileira { position: absolute; top: 0; bottom: 0; padding-right: 1rem; }
+/* 0,5 rem de folga em cima e a esquerda: o contorno de foco (3 px + 2 px) nao e cortado */
+.item-fileira { position: absolute; top: 0.5rem; bottom: 0; margin-left: 0.5rem; padding-right: 0.94rem; }
 
-/* Ao vivo */
-.ao-vivo { display: flex; padding: 0 2rem; }
-.grupos { width: 19rem; flex: none; }
-.canais { flex: 1; margin-left: 1.5rem; }
-.logo { width: 4rem; height: 2.4rem; flex: none; margin-right: 1.2rem; display: flex; align-items: center; justify-content: center; }
+/* Ao vivo: grupos 210 px, canais 330 px, previa 560 x 315 */
+.ao-vivo { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; padding: 2rem 0 0 3.75rem; }
+.grupos { width: 19.7rem; flex: none; }
+.grupos .linha-virtual, .canais .linha-virtual { padding-bottom: 0.375rem; }
+.grupos .item-linha { padding: 0 1.31rem; color: var(--texto-fraco); }
+.grupos .item-linha .texto { font-size: 1.41rem; font-weight: 500; }
+.grupos .item-linha.selecionado .texto, .grupos .item-linha.focado .texto { font-weight: 700; }
+.canais { width: 30.9rem; flex: none; margin-left: 1.5rem; }
+.canais .item-linha { padding: 0 1.125rem; }
+.canais .item-linha .texto { font-size: 1.5rem; font-weight: 700; }
+.logo { width: 4.31rem; height: 2.625rem; flex: none; margin-right: 1.31rem; display: flex; align-items: center; justify-content: center; border-radius: 0.28rem; }
 .logo img { max-width: 100%; max-height: 100%; }
-.previa { width: 46rem; flex: none; margin-left: 1.5rem; }
+.previa { width: 52.5rem; flex: none; margin-left: 2.3rem; }
 /* Sem border-radius nem overflow: no webOS o video vai numa camada de hardware que nao aceita recorte (fica preto, so com som) */
-.quadro-previa { position: relative; width: 46rem; height: 25.9rem; background: #000; }
+.quadro-previa { position: relative; width: 52.5rem; height: 29.53rem; background: #000; }
 .video-previa { width: 100%; height: 100%; background: #000; }
-.aviso-previa { position: absolute; left: 0; right: 0; top: 50%; margin-top: -0.8rem; text-align: center; color: var(--texto-fraco); }
-.guia-previa { margin-top: 1rem; }
-.programa-previa { display: flex; padding: 0.4rem 0; font-size: 1.15rem; color: var(--texto-fraco); border-bottom: 0.08rem solid var(--variante); }
-.programa-previa.agora { color: var(--texto); }
-.hora-previa { width: 6rem; flex: none; }
+.aviso-previa { position: absolute; left: 0; right: 0; top: 50%; margin-top: -0.8rem; text-align: center; font-size: 1.3rem; color: #8c8c8c; }
+.selo-previa { position: absolute; left: 1.31rem; top: 1.125rem; display: flex; align-items: center; font-size: 1.125rem; font-weight: 700; color: #fff; }
+.selo-previa span { margin-right: 0.75rem; }
+.ao-vivo-selo { background: var(--destaque); padding: 0.19rem 0.56rem; border-radius: 0.19rem; }
+.nome-previa { margin-top: 1.5rem; font-size: 2.06rem; font-weight: 800; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.guia-previa { margin-top: 1.125rem; }
+.programa-previa { display: flex; padding: 0.84rem 0; font-size: 1.41rem; color: var(--texto-fraco); border-bottom: 0.094rem solid #2a2a2a; }
+.programa-previa.agora { color: #fff; }
+.hora-previa { width: 7.5rem; flex: none; font-weight: 700; }
 .titulo-previa { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* Capas */
-.capas { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
-.area-fileiras { position: absolute; top: 0; left: 0; right: 0; bottom: 3rem; overflow: hidden; }
-.bloco-fileira { position: absolute; left: 3rem; right: 0; height: 17rem; }
-.titulo-fileira { font-size: 1.25rem; margin-bottom: 0.6rem; height: 2rem; white-space: nowrap; overflow: hidden; }
-.capa { position: relative; width: 8rem; height: 12rem; border-radius: 0.5rem; overflow: hidden; background: var(--superficie); border: 0.2rem solid transparent; }
-.capa.focado { border-color: var(--texto); }
+/* Fileiras como na Netflix: a em foco logo abaixo do menu; o card em foco deitado (16:9) na primeira posicao,
+   os outros em pe (2:3), todos com 16 rem de altura; as informacoes do card em foco ficam embaixo dele */
+.capas { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow: hidden; }
+.fileira-nf { position: absolute; top: 0; left: 0; right: 0; }
+.titulo-fileira { padding-left: 3.75rem; height: 2.4rem; margin-bottom: 0.8rem; font-size: 1.8rem; font-weight: 700; color: var(--texto); white-space: nowrap; overflow: hidden; }
+.trilho-fileira { position: relative; height: 30.7rem; margin-left: 3.75rem; }
+.card-nf { position: absolute; top: 0; left: 0; height: 30rem; }
+.imagem-card { position: relative; width: 100%; height: 30rem; border-radius: 0.5rem; overflow: hidden; background: var(--superficie); }
+.imagem-card img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.card-nf.focado .imagem-card { outline: 0.28rem solid #fff; outline-offset: 0.19rem; }
+.nome-card { position: absolute; left: 0; right: 0; bottom: 0; padding: 5rem 1.8rem 1.4rem; font-size: 2.6rem; font-weight: 800; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.8)); }
+.card-nf:not(.focado) .nome-card { font-size: 1.5rem; padding: 3rem 1rem 0.9rem; white-space: normal; }
+.selo { position: absolute; top: 0.4rem; right: 0.5rem; color: #fff; font-size: 1.3rem; }
+.barra-card { height: 0.4rem; margin-top: 0.3rem; background: #4d4d4d; }
+.preenchido { height: 100%; background: var(--destaque); }
+/* Fora das camadas que deslizam: no webOS o video fica preto dentro de transform, recorte ou cantos arredondados */
+.video-card { position: absolute; background: #000; visibility: hidden; }
+.video-card.visivel { visibility: visible; }
+.info-card { margin: 1.2rem 0 0 3.75rem; width: 60rem; }
+.restante-card { margin-top: 0.6rem; font-size: 1.45rem; font-weight: 700; color: #fff; }
+.sinopse-card { margin-top: 0.6rem; font-size: 1.45rem; line-height: 1.45; max-height: 4.25rem; overflow: hidden; color: var(--texto); }
+.meta-destaque { display: flex; align-items: center; font-size: 1.45rem; color: #d2d2d2; white-space: nowrap; overflow: hidden; }
+.meta-destaque span { margin-right: 1.2rem; }
+.nota { color: var(--nota); font-weight: 700; }
+.tipo-destaque { font-size: 1.22rem; font-weight: 700; letter-spacing: 0.28rem; color: #b3b3b3; }
+/* Animacoes (opcao em Ajustes): a fileira desliza na vertical, os cards na horizontal e o card em foco cresce */
+.animado .fileira-nf { transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.animado .card-nf { transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1), width 0.3s cubic-bezier(0.2, 0.7, 0.2, 1); }
+/* Capas da Busca e de "Titulos semelhantes" */
+.capa { position: relative; width: 10.875rem; height: 15.94rem; border-radius: 0.375rem; overflow: hidden; background: var(--superficie); }
+.capa.focado { outline: 0.28rem solid #fff; outline-offset: 0.19rem; }
 .capa img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.capa-nome { display: block; padding: 0.6rem; font-size: 0.9rem; color: var(--texto-fraco); }
-.selo { position: absolute; top: 0.3rem; right: 0.4rem; color: var(--destaque); font-size: 1.1rem; text-shadow: 0 0 0.3rem #000; }
-.rodape-capa { position: absolute; left: 3rem; bottom: 0.8rem; font-size: 1.1rem; color: var(--texto-fraco); white-space: nowrap; }
+.capa-nome { position: absolute; left: 0; right: 0; bottom: 0; padding: 0.75rem; font-size: 1.125rem; font-weight: 700; color: #fff; }
 
 /* Busca e Ajustes */
-.busca { padding: 0 3rem; }
-.campo { width: 40rem; font-size: 1.3rem; padding: 0.8rem 1rem; background: var(--superficie); color: var(--texto); border: 0.15rem solid var(--variante); border-radius: 0.5rem; outline: none; }
-.campo.focado { border-color: var(--texto); }
+.busca { padding: 3.375rem 3.75rem 0; }
+.campo { width: 46rem; font-size: 1.5rem; padding: 0.9rem 1.2rem; background: var(--superficie); color: var(--texto); border: 0.19rem solid #333; border-radius: 0.375rem; outline: none; font-family: inherit; }
+.campo.focado { border-color: #fff; }
 .bloco-resultado { margin-top: 1.4rem; }
-.vazio-linha { margin-top: 1.4rem; color: var(--texto-fraco); }
-.ajustes { padding: 0 3rem 3rem; height: 100%; overflow: hidden; }
-.secao { color: var(--destaque); font-size: 1.25rem; margin: 1.4rem 0 0.6rem; }
-.info { margin-bottom: 0.7rem; font-size: 1.1rem; }
-.rotulo { font-size: 0.9rem; color: var(--texto-fraco); margin-bottom: 0.2rem; }
-.nota { font-size: 0.9rem; color: var(--texto-fraco); margin-top: 0.5rem; }
+.vazio-linha { margin-top: 1.4rem; color: var(--texto-fraco); font-size: 1.3rem; }
+.ajustes { padding: 2rem 3.75rem 3rem; height: 100%; overflow: hidden; }
+.secao { color: #fff; font-weight: 800; font-size: 1.6rem; margin: 1.6rem 0 0.7rem; }
+.info { margin-bottom: 0.7rem; font-size: 1.25rem; }
+.rotulo { font-size: 1.05rem; color: var(--texto-fraco); margin-bottom: 0.2rem; }
+.ajustes .nota { font-size: 1.05rem; color: var(--texto-fraco); font-weight: 400; margin-top: 0.5rem; }
+.ajustes .botao { padding: 0.8rem 1.8rem; font-size: 1.3rem; }
 .campo-ajuste { margin-bottom: 0.7rem; }
 
-/* Botoes */
-.botao { display: inline-block; padding: 0.7rem 1.6rem; margin: 0.4rem 0.8rem 0.4rem 0; border-radius: 2rem; background: var(--variante); font-size: 1.15rem; }
-.botao.secundario { background: transparent; border: 0.12rem solid var(--variante); }
-.botao.focado { background: var(--texto); color: var(--fundo); border-color: var(--texto); }
-.botoes { margin-top: 1.6rem; }
+/* Botoes do detalhe: 13 px x 28 px, letra de 18 px, cantos de 4 px; redondo de 50 px */
+.botao { display: inline-flex; align-items: center; padding: 1.22rem 2.625rem; margin: 0 1.125rem 0 0; border-radius: 0.375rem; background: var(--botao); color: #fff; font-size: 1.69rem; font-weight: 700; vertical-align: middle; }
+.botao.secundario { padding: 1.22rem 2.06rem; }
+.botao.redondo { width: 4.69rem; height: 4.69rem; padding: 0; justify-content: center; border-radius: 2.35rem; border: 0.19rem solid #b3b3b3; background: rgba(42, 42, 42, 0.6); }
+.botao.focado { background: #fff; color: #000; border-color: #fff; }
+.icone-redondo { width: 2.06rem; height: 2.06rem; }
+.botoes { margin-top: 2.44rem; display: flex; align-items: center; }
 
-/* Detalhes */
+/* Detalhe do filme: texto a 80 px da esquerda e 96 px do topo, 600 px de largura */
 .detalhe { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--fundo); }
 .fundo-detalhe, .fundo-detalhe img, .escurecer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+.fundo-detalhe { background: #1c1c1c; }
 .fundo-detalhe img { object-fit: cover; }
-.escurecer { background: linear-gradient(to right, rgba(14, 15, 18, 0.96), rgba(14, 15, 18, 0.85) 45%, rgba(14, 15, 18, 0.35)); }
-.coluna-detalhe { position: absolute; left: 3.5rem; top: 0; bottom: 0; width: 60%; display: flex; flex-direction: column; justify-content: center; }
-.coluna-detalhe.estreita { width: 30rem; }
-.titulo-detalhe { font-size: 2.6rem; font-weight: 500; }
-.linha-detalhe { margin-top: 0.8rem; color: var(--texto-fraco); font-size: 1.1rem; }
-.sinopse { margin-top: 1.2rem; font-size: 1.15rem; line-height: 1.45; max-height: 10.2rem; overflow: hidden; }
-.elenco { margin-top: 0.8rem; color: var(--texto-fraco); font-size: 0.95rem; max-height: 2.8rem; overflow: hidden; }
-.erro { margin-top: 1rem; color: var(--destaque); }
-.coluna-episodios { position: absolute; left: 36rem; right: 2rem; top: 3rem; bottom: 2rem; }
-.coluna-episodios .fileira { margin-bottom: 0.8rem; }
-.numero-ep { width: 3rem; flex: none; }
-.aviso-proximo { position: absolute; right: 2rem; bottom: 2rem; width: 28rem; padding: 1.5rem; background: rgba(14, 15, 18, 0.95); border-radius: 0.8rem; }
-.rotulo-aviso { color: var(--destaque); }
-.titulo-aviso { margin-top: 0.4rem; font-size: 1.25rem; }
+.escurecer { background: linear-gradient(to bottom, rgba(20, 20, 20, 0) 64%, #141414 89%), linear-gradient(to right, #141414 30%, rgba(20, 20, 20, 0.75) 55%, rgba(20, 20, 20, 0.1) 85%); }
+.coluna-detalhe { position: absolute; left: 7.5rem; top: 7rem; width: 56.25rem; }
+.busca .titulo-fileira, .mesma-categoria .titulo-fileira { padding-left: 0.5rem; }
+/* Acoes do detalhe em coluna, como no video: icone e texto; a em foco vira pilula branca */
+.acoes { margin-top: 2.2rem; }
+.acao { display: flex; align-items: center; width: 32rem; margin-bottom: 0.4rem; padding: 0.8rem 1.6rem; border-radius: 2.4rem; font-size: 1.45rem; font-weight: 700; color: var(--texto); }
+.acao.focado { background: #fff; color: #000; }
+.icone-acao { width: 1.6rem; height: 1.6rem; margin-right: 1.1rem; flex: none; }
+.episodio-destaque { margin-top: 1.5rem; font-size: 1.5rem; font-weight: 700; color: #fff; }
+.titulo-detalhe { margin-top: 1.5rem; font-size: 5.25rem; font-weight: 800; line-height: 1.02; color: #fff; max-height: 10.7rem; overflow: hidden; }
+.coluna-detalhe .meta-destaque { margin-top: 1.5rem; }
+.sinopse { margin-top: 1.5rem; font-size: 1.69rem; line-height: 1.5; max-height: 10.1rem; overflow: hidden; color: var(--texto); }
+.elenco { margin-top: 1.5rem; color: var(--texto-fraco); font-size: 1.4rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.elenco + .elenco { margin-top: 0.75rem; }
+.rotulo-elenco { color: #777; }
+.erro { margin-top: 1rem; font-size: 1.3rem; color: var(--destaque); }
+.barra-detalhe { width: 30rem; height: 0.375rem; margin-top: 1.875rem; background: #4d4d4d; }
+.mesma-categoria { position: absolute; left: 7rem; right: 0; bottom: 0; height: 17.5rem; overflow: hidden; }
+.mesma-categoria .titulo-fileira { margin-bottom: 0.44rem; }
+
+/* Serie: faixa de 300 px no topo, temporadas a 330 px e episodios a 390 px */
+.cabecalho-serie { position: absolute; left: 7.5rem; top: 7rem; width: 60rem; }
+.cabecalho-serie .titulo-detalhe { margin-top: 1.125rem; font-size: 4.31rem; max-height: 4.5rem; }
+.cabecalho-serie .meta-destaque { margin-top: 1.125rem; }
+.sinopse.curta { margin-top: 1.125rem; font-size: 1.5rem; line-height: 1.45; max-height: 4.31rem; }
+.cabecalho-serie .botoes { margin-top: 1.5rem; }
+.cabecalho-serie .botao { padding: 1.03rem 2.25rem; font-size: 1.59rem; }
+.cabecalho-serie .botao.redondo { width: 4.31rem; height: 4.31rem; padding: 0; }
+.aviso-proximo { position: absolute; right: 4.5rem; bottom: 3.75rem; width: 36rem; padding: 2rem; background: rgba(20, 20, 20, 0.95); border-radius: 0.375rem; }
+.rotulo-aviso { font-size: 1.3rem; color: var(--texto-fraco); }
+.titulo-aviso { margin-top: 0.5rem; font-size: 1.6rem; font-weight: 700; color: #fff; }
+.aviso-proximo .botoes { margin-top: 1.5rem; }
+.aviso-proximo .botao { padding: 0.9rem 1.8rem; font-size: 1.4rem; }
 
 /* Players */
 .player { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #000; }
 .video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; }
-.mensagem-player { position: absolute; left: 50%; top: 50%; width: 46rem; margin-left: -23rem; margin-top: -3rem; padding: 1.4rem 1.8rem; background: rgba(14, 15, 18, 0.92); border-radius: 0.8rem; font-size: 1.2rem; text-align: center; }
-.nome-canal { position: absolute; left: 3rem; top: 2.4rem; padding: 1rem 1.6rem; background: rgba(14, 15, 18, 0.8); border-radius: 0.6rem; max-width: 50rem; }
-.titulo-canal { font-size: 1.6rem; }
-.qualidade { margin-left: 1rem; font-size: 0.9rem; color: var(--texto-fraco); border: 0.1rem solid var(--texto-fraco); border-radius: 0.3rem; padding: 0 0.4rem; vertical-align: middle; }
-.faixa { position: absolute; left: 0; right: 0; bottom: 0; padding: 2rem 3rem; background: linear-gradient(to bottom, rgba(14, 15, 18, 0), rgba(14, 15, 18, 0.95) 35%); }
-.programa { margin-top: 0.5rem; font-size: 1.15rem; }
-.lista-lateral { position: absolute; top: 0; bottom: 0; right: 0; width: 26rem; padding: 1.2rem; background: rgba(14, 15, 18, 0.85); }
-.barra-vod { position: absolute; left: 0; right: 0; bottom: 0; padding: 2rem 3rem; background: linear-gradient(to bottom, rgba(14, 15, 18, 0), rgba(14, 15, 18, 0.95) 40%); }
-.tempo-vod { display: flex; align-items: center; margin-top: 0.8rem; font-size: 1.05rem; }
-.trilho { flex: 1; height: 0.3rem; margin: 0 1rem; background: var(--variante); }
-.preenchido { height: 100%; background: var(--destaque); }
-.dica { margin-top: 0.6rem; font-size: 0.9rem; color: var(--texto-fraco); }
+.mensagem-player { position: absolute; left: 50%; top: 50%; width: 52rem; margin-left: -26rem; margin-top: -3.5rem; padding: 1.6rem 2rem; background: rgba(20, 20, 20, 0.92); border-radius: 0.375rem; font-size: 1.5rem; text-align: center; }
+.nome-canal { position: absolute; left: 4.5rem; top: 3.375rem; padding: 1.2rem 1.8rem; background: rgba(20, 20, 20, 0.8); border-radius: 0.375rem; max-width: 56rem; }
+.titulo-canal { font-size: 2.06rem; font-weight: 700; }
+.qualidade { margin-left: 1rem; font-size: 1.1rem; color: var(--texto-fraco); border: 0.094rem solid #8c8c8c; border-radius: 0.28rem; padding: 0 0.56rem; vertical-align: middle; }
+.faixa { position: absolute; left: 0; right: 0; bottom: 0; padding: 3rem 4.5rem 3.75rem; background: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.9) 35%); }
+.programa { margin-top: 0.6rem; font-size: 1.5rem; }
+.faixa .subtitulo { font-size: 1.3rem; }
+.faixa .botoes { margin-top: 1.5rem; }
+.faixa .botao { padding: 0.9rem 1.8rem; font-size: 1.4rem; }
+.lista-lateral { position: absolute; top: 0; bottom: 0; right: 0; width: 30rem; padding: 1.5rem; background: rgba(20, 20, 20, 0.9); }
+
+/* Player de filme e episodio, como no video: icones a esquerda e titulo a direita no topo; embaixo, pausa,
+   tempo, barra e duracao. A barra em foco fica mais grossa, com a bolinha branca maior (para ver onde esta). */
+.topo-vod { position: absolute; left: 0; right: 0; top: 0; height: 12rem; display: flex; justify-content: space-between; align-items: flex-start; padding: 3rem 4.5rem 0; background: linear-gradient(to bottom, rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0)); color: #fff; }
+.icones-vod { display: flex; }
+.icone-vod { display: flex; flex-direction: column; align-items: center; width: 4.6rem; margin-right: 1.2rem; color: #e5e5e5; }
+.icone-vod svg { width: 3.4rem; height: 3.4rem; padding: 0.6rem; border-radius: 1.7rem; }
+.icone-vod.focado svg { background: #fff; color: #000; }
+.rotulo-icone { margin-top: 0.5rem; font-size: 1rem; font-weight: 700; text-transform: uppercase; white-space: nowrap; }
+.titulos-vod { min-width: 0; max-width: 60rem; text-align: right; }
+.titulo-vod { font-size: 1.6rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.subtitulo-vod { margin-top: 0.3rem; font-size: 1.3rem; color: #c8c8c8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.barra-vod { position: absolute; left: 0; right: 0; bottom: 0; height: 16rem; background: linear-gradient(to top, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0)); }
+.linha-vod { position: absolute; left: 4.5rem; right: 4.5rem; bottom: 4.5rem; display: flex; align-items: center; color: #fff; }
+.botao-pausa { width: 4.4rem; height: 4.4rem; flex: none; margin-right: 1.5rem; display: flex; align-items: center; justify-content: center; border-radius: 2.2rem; border: 0.19rem solid rgba(255, 255, 255, 0.6); }
+.botao-pausa svg { width: 1.9rem; height: 1.9rem; }
+.tempo-atual, .tempo-total { font-size: 1.4rem; font-weight: 500; white-space: nowrap; }
+.tempo-atual { margin-right: 1.4rem; }
+.tempo-total { margin-left: 1.4rem; }
+.trilho { position: relative; flex: 1; height: 0.3rem; background: rgba(255, 255, 255, 0.35); }
+.ponto { position: absolute; top: -0.45rem; width: 1.2rem; height: 1.2rem; margin-left: -0.6rem; border-radius: 0.6rem; background: var(--destaque); }
+.barra-vod.focada .trilho { height: 0.55rem; }
+.barra-vod.focada .ponto { top: -0.68rem; width: 1.9rem; height: 1.9rem; margin-left: -0.95rem; border-radius: 0.95rem; background: #fff; border: 0.3rem solid var(--destaque); }
+.barra-vod.focada .botao-pausa { border-color: #fff; }
+/* Marcador do destino escolhido com as setas (o video so pula com OK) */
+.alvo { position: absolute; top: -1rem; bottom: -1rem; width: 0.3rem; margin-left: -0.15rem; background: #fff; }
+.hora-alvo { position: absolute; bottom: 2.4rem; left: -3.5rem; width: 7.3rem; padding: 0.4rem 0; border-radius: 0.3rem; background: rgba(20, 20, 20, 0.92); font-size: 1.4rem; font-weight: 700; text-align: center; }
+.dica-vod { position: absolute; left: 4.5rem; bottom: 1.6rem; font-size: 1.15rem; color: var(--texto-fraco); }
+
+/* Episodios da serie como no print da Netflix: temporadas em coluna a esquerda, episodios com miniatura grande
+   a direita (285 x 160 px numa tela de 1280), codigo T1:E1 e barra de progresso dentro da miniatura */
+.episodios-nf { background: linear-gradient(to bottom, #1b1d2b, #141414 70%); }
+.coluna-temporadas { position: absolute; left: 7rem; top: 7rem; width: 35rem; }
+.titulo-temporadas { font-size: 3.4rem; font-weight: 800; line-height: 1.05; color: #fff; max-height: 7.2rem; overflow: hidden; }
+.coluna-temporadas .meta-destaque { margin-top: 1.4rem; font-size: 1.6rem; }
+.lista-temporadas { margin-top: 3.5rem; }
+.item-temporada { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; padding: 0.8rem 1.8rem; border-radius: 2.2rem; font-size: 1.8rem; font-weight: 700; color: var(--texto); }
+.item-temporada.atual { background: rgba(255, 255, 255, 0.28); }
+.item-temporada.focado { background: #fff; color: #000; }
+.qtd-episodios { font-size: 1.3rem; font-weight: 700; }
+.coluna-episodios-nf { position: absolute; left: 52rem; right: 4rem; top: 7rem; bottom: 0; }
+.cabeca-episodios { height: 3rem; margin-bottom: 1.2rem; font-size: 2.2rem; font-weight: 800; color: #fff; }
+.coluna-episodios-nf .lista-vertical { overflow: visible; }
+.episodio-nf { display: flex; align-items: flex-start; height: 15rem; }
+.miniatura-nf { position: relative; width: 26.7rem; height: 15rem; flex: none; margin-right: 2rem; border-radius: 0.3rem; overflow: hidden; background: #3d4a5c; }
+.episodio-nf.focado .miniatura-nf { outline: 0.28rem solid #fff; outline-offset: 0.19rem; }
+.miniatura-nf img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.codigo-ep { position: absolute; left: 1.2rem; bottom: 1.1rem; font-size: 1.5rem; font-weight: 800; color: #fff; }
+.barra-miniatura { position: absolute; left: 0.8rem; right: 0.8rem; bottom: 0.6rem; height: 0.35rem; background: rgba(255, 255, 255, 0.3); }
+.textos-ep { min-width: 0; padding-top: 2rem; }
+.titulo-ep { font-size: 1.75rem; font-weight: 800; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sinopse-ep { margin-top: 0.7rem; font-size: 1.35rem; line-height: 1.45; color: var(--texto); max-height: 5.9rem; overflow: hidden; }
+.duracao-ep { margin-top: 0.6rem; font-size: 1.35rem; color: var(--texto); }
+
+/* Proximo episodio no fim, como no video: so a pilula, sem contorno; ela se preenche de branco
+   (escala, barata para a TV) durante a contagem e passa sozinha no fim */
+.aviso-fim { position: absolute; right: 4.5rem; bottom: 9rem; display: flex; }
+.botao-fim { position: relative; display: flex; align-items: center; height: 3.6rem; margin-left: 1rem; padding: 0 1.8rem; border-radius: 1.8rem; overflow: hidden; background: rgba(109, 109, 110, 0.7); color: #fff; font-size: 1.35rem; font-weight: 700; white-space: nowrap; }
+.botao-fim svg { width: 1.4rem; height: 1.4rem; margin-right: 0.7rem; flex: none; }
+.botao-fim.proximo { background: rgba(255, 255, 255, 0.55); color: #000; }
+.enchimento { position: absolute; top: 0; left: 0; bottom: 0; width: 100%; background: #fff; transform-origin: left center; transform: scaleX(0); animation-name: preencher; animation-timing-function: linear; animation-fill-mode: forwards; }
+.conteudo-fim { position: relative; display: flex; align-items: center; }
+@keyframes preencher { from { transform: scaleX(0); } to { transform: scaleX(1); } }

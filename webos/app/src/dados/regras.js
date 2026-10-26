@@ -220,6 +220,7 @@ export function lerSerie(raiz) {
         extensao: texto(item, 'container_extension') || 'mp4',
         duracaoSegundos: detalhe ? inteiro(detalhe, 'duration_secs') : null,
         sinopse: detalhe ? texto(detalhe, 'plot') : null,
+        imagem: detalhe ? primeiroTexto(detalhe, 'movie_image') : null,
       });
     });
     daTemporada.sort(function (a, b) { return a.numero - b.numero; });

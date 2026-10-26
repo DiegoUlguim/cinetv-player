@@ -61,6 +61,7 @@ function Previa(props) {
     return function () { document.removeEventListener('visibilitychange', aoMudar); };
   }, []);
   var tocar = canal && !oculto ? canal : null;
+  var [qualidade, setQualidade] = useState('');
 
   useEffect(function () {
     var v = video.current;
@@ -69,7 +70,9 @@ function Previa(props) {
     // Mesma variante do player em tela cheia: ao apertar OK o canal abre igual
     var variantes = estado.indice.variantes[tocar.grupo] || [tocar];
     var i = escolherVariante(variantes.map(function (x) { return x.qualidade; }), qualidadeAlvo(preferencias.qualidade(), estado.velocidadeBps));
-    v.src = estado.cliente.urlAoVivo((variantes[i] || tocar).id, 'ts');
+    var escolhida = variantes[i] || tocar;
+    setQualidade(escolhida.qualidade || '');
+    v.src = estado.cliente.urlAoVivo(escolhida.id, 'ts');
     var p = v.play();
     if (p && p.catch) p.catch(function () { /* o evento error trata */ });
     return function () { fecharVideo(v); };
@@ -89,7 +92,9 @@ function Previa(props) {
       <div class="quadro-previa">
         <video ref={video} class="video-previa" onError={function () { setFalhou(true); }} />
         {falhou ? <div class="aviso-previa">Prévia indisponível</div> : null}
+        {tocar && !falhou ? <div class="selo-previa"><span class="ao-vivo-selo">AO VIVO</span>{qualidade ? <span>{qualidade}</span> : null}</div> : null}
       </div>
+      {canal ? <div class="nome-previa">{canal.nomeBase}</div> : null}
       <div class="guia-previa">
         {grade.length ? grade.map(function (p, i) {
           return (
@@ -177,14 +182,14 @@ export function AoVivo(props) {
   return (
     <div class="ao-vivo">
       <ListaVertical
-        classe="grupos" itens={lista} indice={indiceGrupo} visiveis={linhasQueCabem(3.6, 7)} altura={3.6}
+        classe="grupos" itens={lista} indice={indiceGrupo} visiveis={linhasQueCabem(3.75, 8)} altura={3.75}
         focada={props.focado && area === 'grupos'} chave={function (g) { return g.id; }}
         render={function (g, i, focado) {
           return <ItemLinha focado={focado} selecionado={g.id === grupoId}><span class="texto">{g.nome}</span></ItemLinha>;
         }}
       />
       <ListaVertical
-        key={grupoId} classe="canais" itens={canais} indice={area === 'canais' ? indiceCanal : 0} visiveis={linhasQueCabem(4.2, 7)} altura={4.2}
+        key={grupoId} classe="canais" itens={canais} indice={area === 'canais' ? indiceCanal : 0} visiveis={linhasQueCabem(4.5, 8)} altura={4.5}
         focada={props.focado && area === 'canais'} chave={function (c) { return c.id; }}
         render={function (c, i, focado) {
           return (

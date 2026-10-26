@@ -16,9 +16,11 @@ export function Ajustes(props) {
   var [campos, setCampos] = useState({ servidor: login.servidor, usuario: login.usuario, senha: login.senha });
   var [qualidade, setQualidade] = useState(preferencias.qualidade());
   var [previa, setPrevia] = useState(preferencias.previaAoVivo());
+  var [destaque, setDestaque] = useState(preferencias.destaque());
+  var [animacoes, setAnimacoes] = useState(preferencias.animacoes());
   // Sem login, o foco comeca no servidor
-  var itens = ['atualizar', 'qualidade', 'previa', 'servidor', 'usuario', 'senha', 'salvar'];
-  var [indice, setIndice] = useState(estado.login ? 0 : 3);
+  var itens = ['atualizar', 'qualidade', 'previa', 'destaque', 'animacoes', 'servidor', 'usuario', 'senha', 'salvar'];
+  var [indice, setIndice] = useState(estado.login ? 0 : 5);
   var refs = { servidor: useRef(null), usuario: useRef(null), senha: useRef(null) };
   // Login que chegou depois (ares-launch -p ou outra tela): os campos acompanham
   var loginSalvo = estado.login ? estado.login.servidor + '|' + estado.login.usuario : '';
@@ -56,6 +58,13 @@ export function Ajustes(props) {
       return true;
     }
     if (item === 'previa') { preferencias.salvarPreviaAoVivo(!previa); setPrevia(!previa); return true; }
+    if (item === 'destaque') { preferencias.salvarDestaque(!destaque); setDestaque(!destaque); return true; }
+    if (item === 'animacoes') {
+      preferencias.salvarAnimacoes(!animacoes);
+      setAnimacoes(!animacoes);
+      document.documentElement.className = !animacoes ? 'animado' : '';
+      return true;
+    }
     if (item === 'salvar' && campos.servidor.trim() && campos.usuario.trim() && campos.senha.trim()) {
       entrar(campos.servidor, campos.usuario, campos.senha);
       setIndice(0);
@@ -102,6 +111,12 @@ export function Ajustes(props) {
       <div class="secao">Ao vivo</div>
       <Botao focado={props.focado && item === 'previa'}>{'Prévia do canal com som: ' + (previa ? 'Ligada' : 'Desligada')}</Botao>
       <div class="nota">Toca o canal em foco ao lado da lista, com a programação embaixo. Desligue se a TV ficar lenta.</div>
+
+      <div class="secao">Filmes e séries</div>
+      <Botao focado={props.focado && item === 'destaque'}>{'Prévia do título com som: ' + (destaque ? 'Ligada' : 'Desligada')}</Botao>
+      <div class="nota">Parado num título por 2 s, toca o começo do filme (ou do primeiro episódio da série) no card. Desligue se a TV ficar lenta.</div>
+      <Botao focado={props.focado && item === 'animacoes'}>{'Animações: ' + (animacoes ? 'Ligadas' : 'Desligadas')}</Botao>
+      <div class="nota">A fileira desliza e o card em foco cresce. Desligadas, a troca é instantânea (mais leve para a TV).</div>
 
       <div class="secao">Login do servidor</div>
       {campo('servidor', 'Servidor (ex.: http://servidor.com:80)', 'text')}
