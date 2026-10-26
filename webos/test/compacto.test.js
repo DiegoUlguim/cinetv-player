@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { compactar, expandir } from '../app/src/dados/compacto.js';
+import { assinatura, compactar, dividir, expandir, juntarPartes } from '../app/src/dados/compacto.js';
 import { agruparCanais, semAcento } from '../app/src/dados/regras.js';
 
 function catalogo() {
@@ -40,4 +40,23 @@ test('compacto: o comeco das capas e guardado uma vez so', () => {
 test('compacto: catalogo antigo, em objetos, passa direto', () => {
   var antigo = catalogo();
   assert.equal(expandir(antigo), antigo);
+});
+
+test('partes: dividir e juntar devolvem o mesmo catalogo que o formato inteiro', () => {
+  var original = catalogo();
+  var partes = JSON.parse(JSON.stringify(dividir(original)));
+  var volta = juntarPartes(original.meta, partes);
+  var inteiro = expandir(JSON.parse(JSON.stringify(compactar(original))));
+  assert.deepEqual(volta, inteiro);
+});
+
+test('partes: mudar um filme muda so a assinatura dos filmes', () => {
+  var a = dividir(catalogo());
+  var outro = catalogo();
+  outro.filmes[0].nome = 'Ação Total 2';
+  var b = dividir(outro);
+  var ass = (p) => assinatura(JSON.stringify(p));
+  assert.notEqual(ass(a.filmes), ass(b.filmes));
+  assert.equal(ass(a.series), ass(b.series));
+  assert.equal(ass(a.canais), ass(b.canais));
 });

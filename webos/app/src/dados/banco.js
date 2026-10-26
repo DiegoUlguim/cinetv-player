@@ -1,10 +1,11 @@
-// IndexedDB: catalogo inteiro por versao (troca atomica de ponteiro) e dados do usuario por registro.
+// IndexedDB: catalogo em partes (canais, filmes, series e a meta) e dados do usuario por registro.
 //
-// No Android a sincronizacao grava numa transacao unica lendo da rede. No IndexedDB a transacao fecha sozinha
-// no primeiro fetch, entao a versao nova e gravada inteira (a TV de teste tem 1 GB de limite de memoria e leu
-// os 9 MB de filmes em 1,2 s) e so depois o ponteiro "atual" troca, junto com a exclusao da versao antiga.
+// A TV de teste tem ~18 MB de cota e nao devolve na hora o espaco apagado: duas copias do catalogo inteiro
+// estouravam, e apagar a antiga para tentar de novo deixava a TV sem listas (baixava tudo a cada abertura).
+// Agora cada parte e regravada sozinha, so se mudou, e a meta vai por ultimo: se uma parte falhar, a meta
+// antiga fica (a proxima abertura sincroniza de novo) e nada do que estava guardado e apagado.
 
-import { compactar, expandir } from './compacto.js';
+import { assinatura, dividir, expandir, juntarPartes, PARTES } from './compacto.js';
 
 var NOME = 'cinetv';
 var VERSAO_ESQUEMA = 1;
@@ -41,20 +42,24 @@ export function abrirBanco() {
   return abrindo;
 }
 
-/** Catalogo atual, ou null se nunca sincronizou. Apaga versoes orfas (sincronizacao interrompida). */
+/** Catalogo guardado, ou null se nunca sincronizou. Le o formato em partes e, se nao houver, o antigo (v1, v2...). */
 export function lerCatalogo() {
   return abrirBanco().then(function (db) {
-    var tx = db.transaction('catalogo', 'readwrite');
+    var tx = db.transaction('catalogo', 'readonly');
     var loja = tx.objectStore('catalogo');
-    return pedido(loja.get('atual')).then(function (atual) {
-      return pedido(loja.getAllKeys ? loja.getAllKeys() : loja.openCursor()).then(function (chaves) {
-        if (Array.isArray(chaves)) {
-          chaves.forEach(function (k) { if (k !== 'atual' && k !== 'v' + atual) loja.delete(k); });
-        }
-        return atual ? pedido(loja.get('v' + atual)) : null;
+    var lidos = {};
+    var pedidos = PARTES.concat(['meta']).map(function (n) {
+      return pedido(loja.get('p:' + n)).then(function (v) { lidos[n] = v; });
+    });
+    pedidos.push(pedido(loja.get('atual')).then(function (atual) {
+      return atual ? pedido(loja.get('v' + atual)).then(function (v) { lidos.antigo = v; }) : null;
+    }));
+    return Promise.all(pedidos).then(function () {
+      return fimDaTransacao(tx).then(function () {
+        var completo = lidos.meta && PARTES.every(function (n) { return lidos[n]; });
+        if (completo) return juntarPartes(lidos.meta.meta, lidos);
+        return lidos.antigo ? expandir(lidos.antigo) : null;
       });
-    }).then(function (catalogo) {
-      return fimDaTransacao(tx).then(function () { return catalogo ? expandir(catalogo) : null; });
     });
   });
 }
@@ -71,54 +76,37 @@ export function espacoUsado() {
   });
 }
 
-/**
- * Grava a versao nova e, numa segunda transacao, troca o ponteiro e apaga a anterior.
- * Na TV de teste as duas versoes juntas passam da cota do IndexedDB (QuotaExceededError na 2a sincronizacao):
- * nesse caso apaga a anterior e grava de novo. Perde a troca atomica so ai; se a rede cair no meio, a TV fica
- * sem listas ate a proxima sincronizacao. O app segue com o catalogo novo na memoria mesmo se falhar de novo.
- */
+function gravarChave(db, chave, valor, apagar) {
+  var tx = db.transaction('catalogo', 'readwrite');
+  var loja = tx.objectStore('catalogo');
+  (apagar || []).forEach(function (k) { loja.delete(k); });
+  loja.put(valor, chave);
+  return fimDaTransacao(tx);
+}
+
+/** Partes cuja assinatura mudou desde a ultima gravacao (todas, se nunca gravou). */
+export function partesMudadas(antes, novas) {
+  return PARTES.filter(function (n) { return !antes || antes[n] !== novas[n]; });
+}
+
+/** Grava as partes que mudaram, uma por transacao, e a meta por ultimo. Devolve os nomes das partes gravadas. */
 export function gravarCatalogo(catalogo) {
-  var guardado = compactar(catalogo);
-  return comReserva(
-    function () { return gravarComTroca(guardado); },
-    apagarCatalogo,
-  );
-}
-
-/** Tenta gravar; so com falta de espaco libera o que existe e tenta uma segunda vez. Outro erro sobe direto. */
-export function comReserva(gravar, liberar) {
-  return gravar().catch(function (erro) {
-    if (!faltaDeEspaco(erro)) throw erro;
-    return liberar().then(gravar);
-  });
-}
-
-export function faltaDeEspaco(erro) {
-  return !!erro && (erro.name === 'QuotaExceededError' || /quota/i.test(erro.message || ''));
-}
-
-function apagarCatalogo() {
+  var partes = dividir(catalogo);
+  var novas = {};
+  PARTES.forEach(function (n) { novas[n] = assinatura(JSON.stringify(partes[n])); });
   return abrirBanco().then(function (db) {
-    var tx = db.transaction('catalogo', 'readwrite');
-    tx.objectStore('catalogo').clear();
-    return fimDaTransacao(tx);
-  });
-}
-
-function gravarComTroca(catalogo) {
-  return abrirBanco().then(function (db) {
-    var ler = db.transaction('catalogo', 'readonly');
-    return pedido(ler.objectStore('catalogo').get('atual')).then(function (atual) {
-      var nova = (atual || 0) + 1;
-      var gravar = db.transaction('catalogo', 'readwrite');
-      gravar.objectStore('catalogo').put(catalogo, 'v' + nova);
-      return fimDaTransacao(gravar).then(function () {
-        var trocar = db.transaction('catalogo', 'readwrite');
-        var loja = trocar.objectStore('catalogo');
-        loja.put(nova, 'atual');
-        if (atual) loja.delete('v' + atual);
-        return fimDaTransacao(trocar);
+    var ler = db.transaction('catalogo', 'readonly').objectStore('catalogo');
+    return Promise.all([pedido(ler.get('p:meta')), pedido(ler.getAllKeys())]).then(function (r) {
+      var mudadas = partesMudadas(r[0] && r[0].assinaturas, novas);
+      // O formato antigo (atual, v1, v2...) sai junto com a primeira gravacao
+      var legado = r[1].filter(function (k) { return String(k).indexOf('p:') !== 0; });
+      var passo = Promise.resolve();
+      mudadas.forEach(function (n, i) {
+        passo = passo.then(function () { return gravarChave(db, 'p:' + n, partes[n], i === 0 ? legado : null); });
       });
+      return passo
+        .then(function () { return gravarChave(db, 'p:meta', { meta: catalogo.meta, assinaturas: novas }, mudadas.length ? null : legado); })
+        .then(function () { return mudadas; });
     });
   });
 }
