@@ -69,6 +69,7 @@ export function Busca(props) {
     }
     if (acao === 'cima') { if (linha === 0) setArea('campo'); else setLinha(linha - 1); return true; }
     if (acao === 'baixo') { setLinha(Math.min(linhas.length - 1, linha + 1)); return true; }
+    if (acao === 'esq' && coluna === 0) return false; // borda: vai ao menu
     if (acao === 'esq' || acao === 'dir') {
       var nova = Math.max(0, Math.min(atual.itens.length - 1, coluna + (acao === 'dir' ? 1 : -1)));
       var c = Object.assign({}, colunas);

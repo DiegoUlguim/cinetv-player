@@ -6,6 +6,11 @@ var producao = process.argv.indexOf('--dev') < 0;
 rmSync('construido', { recursive: true, force: true });
 mkdirSync('construido', { recursive: true });
 cpSync('app/estatico', 'construido', { recursive: true });
+// Letra Inter (OFL) dentro do pacote: a TV nao a tem e o app nao depende da internet para desenhar o texto
+mkdirSync('construido/fontes');
+[400, 500, 700, 800].forEach(function (peso) {
+  cpSync('node_modules/@fontsource/inter/files/inter-latin-' + peso + '-normal.woff2', 'construido/fontes/inter-' + peso + '.woff2');
+});
 await build({
   entryPoints: ['app/src/main.jsx'],
   bundle: true,

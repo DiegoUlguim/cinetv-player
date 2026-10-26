@@ -68,7 +68,9 @@ export function sincronizarSePreciso(forcar) {
         registrar('Sincronizacao: ' + JSON.stringify(r.resumo));
         // O catalogo novo vale na hora, mesmo que a TV nao consiga guardar (vai baixar de novo na proxima abertura)
         estado.indice = indexar(r.catalogo);
-        return gravarCatalogo(r.catalogo).catch(function (e) {
+        return gravarCatalogo(r.catalogo).then(function (gravadas) {
+          registrar('Listas guardadas: ' + (gravadas.length ? gravadas.join(', ') : 'nada mudou'));
+        }, function (e) {
           registrar('Falha ao guardar as listas na TV: ' + (e && (e.name + ' ' + e.message)));
           estado.erro = 'Listas atualizadas, mas a TV não conseguiu guardá-las';
         }).then(espacoUsado).then(function (espaco) {

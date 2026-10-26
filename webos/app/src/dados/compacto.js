@@ -42,6 +42,37 @@ export function compactar(catalogo) {
   return { formato: FORMATO, meta: catalogo.meta, categorias: catalogo.categorias, prefixos: p.lista, canais: canais, filmes: filmes, series: series };
 }
 
+// Catalogo em partes, cada uma numa chave: o pico de espaco ao regravar passa a ser uma parte, e nao o catalogo
+// inteiro duas vezes (que estourava a cota de ~18 MB da TV de teste). A meta (data da atualizacao) fica a parte.
+export var PARTES = ['filmes', 'series', 'canais'];
+
+export function dividir(catalogo) {
+  var vazio = { canais: [], filmes: [], series: [], meta: null };
+  return {
+    canais: compactar(Object.assign({}, vazio, { categorias: { live: catalogo.categorias.live }, canais: catalogo.canais })),
+    filmes: compactar(Object.assign({}, vazio, { categorias: { vod: catalogo.categorias.vod }, filmes: catalogo.filmes })),
+    series: compactar(Object.assign({}, vazio, { categorias: { series: catalogo.categorias.series }, series: catalogo.series })),
+  };
+}
+
+export function juntarPartes(meta, partes) {
+  var c = expandir(partes.canais);
+  var f = expandir(partes.filmes);
+  var s = expandir(partes.series);
+  return {
+    meta: meta,
+    categorias: { live: c.categorias.live, vod: f.categorias.vod, series: s.categorias.series },
+    canais: c.canais, filmes: f.filmes, series: s.series,
+  };
+}
+
+/** Assinatura curta (FNV-1a de 32 bits) do texto: parte igual a guardada nao e regravada. */
+export function assinatura(texto) {
+  var h = 0x811c9dc5;
+  for (var i = 0; i < texto.length; i++) h = Math.imul(h ^ texto.charCodeAt(i), 0x01000193);
+  return (h >>> 0).toString(36) + ':' + texto.length;
+}
+
 /** Volta ao catalogo que as telas usam. Catalogo antigo (objetos, sem formato) passa direto. */
 export function expandir(guardado) {
   if (!guardado || guardado.formato !== FORMATO) return guardado;

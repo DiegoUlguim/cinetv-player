@@ -125,7 +125,7 @@ var amostraSerie = {
   seasons: [{ season_number: 1, name: 'Temporada 1' }],
   info: { plot: 'Sinopse', genre: 'Drama', backdrop_path: ['http://x/f.jpg'], cover: 'http://x/c.jpg' },
   episodes: {
-    2: [{ id: '900', episode_num: '1', title: 'S2E1', container_extension: 'mkv', season: 2, info: { duration_secs: 2400 } }],
+    2: [{ id: '900', episode_num: '1', title: 'S2E1', container_extension: 'mkv', season: 2, info: { duration_secs: 2400, movie_image: 'http://x/e.jpg' } }],
     1: [
       { id: '377288', episode_num: '2', title: 'Episódio 2', container_extension: 'mp4', season: 1, info: { plot: '' } },
       { id: '377287', episode_num: '1', title: 'Episódio 1', container_extension: 'mp4', season: 1, info: [] },
@@ -141,6 +141,8 @@ test('serie: temporadas em ordem e episodios ordenados', function () {
   assert.deepEqual(s.episodios[1].map(function (e) { return e.id; }), [377287, 377288]);
   assert.equal(s.episodios[2][0].extensao, 'mkv');
   assert.equal(s.episodios[2][0].duracaoSegundos, 2400);
+  assert.equal(s.episodios[2][0].imagem, 'http://x/e.jpg');
+  assert.equal(s.episodios[1][0].imagem, null);
   assert.equal(s.fundo, 'http://x/f.jpg');
 });
 
@@ -163,7 +165,8 @@ test('guia: [] e objeto sem epg_listings sao "sem guia"; programa atual e seguin
   ] }, agora, function (b) { return Buffer.from(b, 'base64').toString('latin1'); });
   assert.equal(g.agora.titulo, 'Jornal Nacional');
   assert.equal(g.seguinte.titulo, 'Novela');
-  assert.deepEqual(lerGuia({}, agora), { agora: null, seguinte: null });
+  assert.deepEqual(g.proximos.map(function (p) { return p.titulo; }), ['Jornal Nacional', 'Novela']);
+  assert.deepEqual(lerGuia({}, agora), { agora: null, seguinte: null, proximos: [] });
 });
 
 test('guia: titulo que nao e base64 fica como veio', function () {

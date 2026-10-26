@@ -1,5 +1,26 @@
 // Listas virtualizadas (so os itens visiveis existem no DOM) e itens com foco, sem animacao: a TV e de 2019.
-import { useRef } from 'preact/hooks';
+// A unica suavidade e o esmaecimento das imagens de fundo (opacidade, que a TV desenha sem recalcular a tela).
+import { useRef, useState } from 'preact/hooks';
+
+/** Imagem de fundo que aparece aos poucos depois de carregar (use key={src} para cada imagem nova). */
+export function FundoSuave(props) {
+  var [carregou, setCarregou] = useState(false);
+  return <img class={props.classe + ' suave' + (carregou ? ' visivel' : '')} src={props.src} alt="" onLoad={function () { setCarregou(true); }} />;
+}
+
+/** Nota (verde), ano, duracao e genero numa linha, como no layout. */
+export function Meta(props) {
+  return (
+    <div class="meta-destaque">
+      {props.nota ? <span class="nota">{'★ ' + props.nota.toFixed(1).replace('.', ',')}</span> : null}
+      {props.ano ? <span>{props.ano}</span> : null}
+      {props.duracao ? <span>{props.duracao}</span> : null}
+      {props.extra ? <span>{props.extra}</span> : null}
+      {props.genero ? <span>{props.genero}</span> : null}
+    </div>
+  );
+}
+
 
 function remEmPx() {
   return parseFloat(window.getComputedStyle(document.documentElement).fontSize) || 16;

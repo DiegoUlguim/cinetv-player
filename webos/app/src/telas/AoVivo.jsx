@@ -1,9 +1,12 @@
 // Ao vivo: grupos a esquerda ("★ Favoritos" primeiro, se houver), canais do grupo a direita.
 // Regras do Android (TelaAoVivo.kt): o grupo em foco so abre depois de 300 ms parado; a direita confirma na hora
 // e entra no ultimo canal usado no grupo (ou no primeiro); a esquerda volta ao grupo selecionado.
+// Previa (opcional em Ajustes): o canal em foco toca com som a direita, com a grade logo abaixo.
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { ItemLinha, linhasQueCabem, ListaVertical } from '../componentes.jsx';
+import { hora, ItemLinha, linhasQueCabem, ListaVertical } from '../componentes.jsx';
 import { alternarFavorito, estado, favoritosDoTipo, guia } from '../estado.js';
+import { preferencias } from '../dados/preferencias.js';
+import { escolherVariante, qualidadeAlvo } from '../dados/regras.js';
 
 var ESPERA_TROCA_GRUPO_MS = 300;
 var ESPERA_GUIA_MS = 400;
@@ -37,6 +40,75 @@ function ProgramaAtual(props) {
   return guardado && guardado.agora ? <span class="subtitulo">{guardado.agora.titulo}</span> : null;
 }
 
+/** Fecha o fluxo do <video> (conexao unica por conta). */
+function fecharVideo(v) {
+  if (!v) return;
+  v.pause();
+  v.removeAttribute('src');
+  v.load();
+}
+
+// Toca o canal recebido; sem canal (lista andando, foco fora ou app em segundo plano) a conexao fica fechada
+function Previa(props) {
+  var video = useRef(null);
+  var [falhou, setFalhou] = useState(false);
+  var [, redesenhar] = useState(0);
+  var canal = props.canal;
+  var [oculto, setOculto] = useState(document.hidden);
+  useEffect(function () {
+    var aoMudar = function () { setOculto(document.hidden); };
+    document.addEventListener('visibilitychange', aoMudar);
+    return function () { document.removeEventListener('visibilitychange', aoMudar); };
+  }, []);
+  var tocar = canal && !oculto ? canal : null;
+  var [qualidade, setQualidade] = useState('');
+
+  useEffect(function () {
+    var v = video.current;
+    setFalhou(false);
+    if (!tocar) return undefined;
+    // Mesma variante do player em tela cheia: ao apertar OK o canal abre igual
+    var variantes = estado.indice.variantes[tocar.grupo] || [tocar];
+    var i = escolherVariante(variantes.map(function (x) { return x.qualidade; }), qualidadeAlvo(preferencias.qualidade(), estado.velocidadeBps));
+    var escolhida = variantes[i] || tocar;
+    setQualidade(escolhida.qualidade || '');
+    v.src = estado.cliente.urlAoVivo(escolhida.id, 'ts');
+    var p = v.play();
+    if (p && p.catch) p.catch(function () { /* o evento error trata */ });
+    return function () { fecharVideo(v); };
+  }, [tocar && tocar.id]);
+
+  useEffect(function () {
+    if (!canal || !props.consultar) return undefined;
+    var vivo = true;
+    guia.obter(canal).then(function () { if (vivo) redesenhar(function (n) { return n + 1; }); });
+    return function () { vivo = false; };
+  }, [canal && canal.id, props.consultar]);
+
+  var g = canal ? guia.emCache(canal) : null;
+  var grade = g && g.proximos ? g.proximos : [];
+  return (
+    <div class="previa">
+      <div class="quadro-previa">
+        <video ref={video} class="video-previa" onError={function () { setFalhou(true); }} />
+        {falhou ? <div class="aviso-previa">Prévia indisponível</div> : null}
+        {tocar && !falhou ? <div class="selo-previa"><span class="ao-vivo-selo">AO VIVO</span>{qualidade ? <span>{qualidade}</span> : null}</div> : null}
+      </div>
+      {canal ? <div class="nome-previa">{canal.nomeBase}</div> : null}
+      <div class="guia-previa">
+        {grade.length ? grade.map(function (p, i) {
+          return (
+            <div key={p.inicio} class={'programa-previa' + (p === g.agora ? ' agora' : '')}>
+              <span class="hora-previa">{i === 0 && p === g.agora ? 'Agora' : hora(p.inicio)}</span>
+              <span class="titulo-previa">{p.titulo}</span>
+            </div>
+          );
+        }) : (canal && props.consultar && g !== undefined ? <div class="programa-previa">Sem guia para este canal</div> : null)}
+      </div>
+    </div>
+  );
+}
+
 export function AoVivo(props) {
   var lista = grupos();
   var [indiceGrupo, setIndiceGrupo] = useState(0);
@@ -47,6 +119,7 @@ export function AoVivo(props) {
   var [listaParada, setListaParada] = useState(false);
   var grupoId = selecionado || (lista[0] && lista[0].id);
   var canais = canaisDoGrupo(grupoId);
+  var comPrevia = preferencias.previaAoVivo();
 
   // So troca a lista de canais quando o foco para no grupo
   var emFoco = lista[indiceGrupo] && lista[indiceGrupo].id;
@@ -89,7 +162,12 @@ export function AoVivo(props) {
       setIndiceGrupo(i < 0 ? 0 : i);
       return true;
     }
-    if (acao === 'ok' && canais[indiceCanal]) { props.aoAbrirCanal(canais, indiceCanal); return true; }
+    if (acao === 'ok' && canais[indiceCanal]) {
+      // A previa fecha a conexao antes do player em tela cheia abrir a dele
+      fecharVideo(document.querySelector('.video-previa'));
+      props.aoAbrirCanal(canais, indiceCanal);
+      return true;
+    }
     if (acao === 'segurar' && canais[indiceCanal]) { alternarFavorito('canal', canais[indiceCanal]); return true; }
     return false;
   };
@@ -104,14 +182,14 @@ export function AoVivo(props) {
   return (
     <div class="ao-vivo">
       <ListaVertical
-        classe="grupos" itens={lista} indice={indiceGrupo} visiveis={linhasQueCabem(3.6, 7)} altura={3.6}
+        classe="grupos" itens={lista} indice={indiceGrupo} visiveis={linhasQueCabem(3.75, 8)} altura={3.75}
         focada={props.focado && area === 'grupos'} chave={function (g) { return g.id; }}
         render={function (g, i, focado) {
           return <ItemLinha focado={focado} selecionado={g.id === grupoId}><span class="texto">{g.nome}</span></ItemLinha>;
         }}
       />
       <ListaVertical
-        key={grupoId} classe="canais" itens={canais} indice={area === 'canais' ? indiceCanal : 0} visiveis={linhasQueCabem(4.2, 7)} altura={4.2}
+        key={grupoId} classe="canais" itens={canais} indice={area === 'canais' ? indiceCanal : 0} visiveis={linhasQueCabem(4.5, 8)} altura={4.5}
         focada={props.focado && area === 'canais'} chave={function (c) { return c.id; }}
         render={function (c, i, focado) {
           return (
@@ -119,12 +197,18 @@ export function AoVivo(props) {
               <span class="logo">{c.logo ? <img src={c.logo} alt="" decoding="async" /> : null}</span>
               <span class="textos">
                 <span class="texto">{c.nomeBase}</span>
-                <ProgramaAtual canal={c} consultar={listaParada} />
+                {comPrevia ? null : <ProgramaAtual canal={c} consultar={listaParada} />}
               </span>
             </ItemLinha>
           );
         }}
       />
+      {comPrevia ? (
+        <Previa
+          canal={props.focado && area === 'canais' && listaParada ? canais[indiceCanal] : null}
+          consultar={listaParada}
+        />
+      ) : null}
     </div>
   );
 }
